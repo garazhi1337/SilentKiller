@@ -72,16 +72,16 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>C:\Users\garazhi\Documents\SilentKiller\Libraries\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\garazhi\Documents\SilentKiller\Libraries\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Users\user\source\repos\SilentKiller\Libraries\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\user\source\repos\SilentKiller\Libraries\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>C:\Users\garazhi\Documents\SilentKiller\Libraries\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\garazhi\Documents\SilentKiller\Libraries\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Users\user\source\repos\SilentKiller\Libraries\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\user\source\repos\SilentKiller\Libraries\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -154,8 +154,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="frag.glsl" />
-    <None Include="lightFrag.glsl" />
-    <None Include="lightVert.glsl" />
     <None Include="vert.glsl" />
   </ItemGroup>
   <ItemGroup>

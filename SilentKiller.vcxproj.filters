@@ -44,12 +44,6 @@
     <None Include="frag.glsl">
       <Filter>Исходные файлы\Shaders</Filter>
     </None>
-    <None Include="lightVert.glsl">
-      <Filter>Исходные файлы\Shaders</Filter>
-    </None>
-    <None Include="lightFrag.glsl">
-      <Filter>Исходные файлы\Shaders</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Shader.h">
