@@ -16,6 +16,8 @@ public:
 	unsigned int getProgram();
 	void setFloatVec(std::string uniformPath, float* vec, int vecSize);
 	void setFloatMat4(std::string uniformPath, glm::mat4 matrix);
+	void setVec4(std::string uniformPath, glm::vec4 vector);
+	void setVec3(std::string uniformPath, glm::vec3 vector);
 private:
 	unsigned int program;
 };

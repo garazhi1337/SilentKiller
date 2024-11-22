@@ -111,3 +111,13 @@ void Shader::setFloatMat4(std::string uniformPath, glm::mat4 matrix)
 {
 	glUniformMatrix4fv(glGetUniformLocation(program, uniformPath.c_str()), 1, GL_FALSE, glm::value_ptr(matrix));
 }
+
+void Shader::setVec4(std::string uniformPath, glm::vec4 vector)
+{
+	glUniform4f(glGetUniformLocation(program, uniformPath.c_str()), vector.x, vector.y, vector.z, vector.w);
+}
+
+void Shader::setVec3(std::string uniformPath, glm::vec3 vector)
+{
+	glUniform3f(glGetUniformLocation(program, uniformPath.c_str()), vector.x, vector.y, vector.z);
+}
