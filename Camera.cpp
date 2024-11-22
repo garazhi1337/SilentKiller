@@ -3,7 +3,7 @@
 void Camera::onMouse(GLFWwindow* window, double xpos, double ypos)
 {
 	float xoffset = xpos - lastX;
-	float yoffset = lastY - ypos; // reversed: y ranges bottom to top
+	float yoffset = lastY - ypos;
 	lastX = xpos;
 	lastY = ypos;
 	const float sensitivity = 0.1f;
@@ -89,7 +89,7 @@ void Camera::move(GLFWwindow* window)
 	float currentFrame = glfwGetTime();
 	deltaTime = currentFrame - lastFrame;
 	lastFrame = currentFrame;
-	//std::cout << "FPS: " << 1.f / deltaTime << std::endl;
+	std::cout << "FPS: " << 1.f / deltaTime << std::endl;
 
 	const float cameraSpeed = 2.5f * deltaTime;
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)

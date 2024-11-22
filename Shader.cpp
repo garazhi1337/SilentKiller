@@ -54,8 +54,6 @@ Shader::Shader(std::string vertexShaderPath, std::string fragmentShaderPath)
 	v = vertexSource.c_str();
 	f = fragmentSource.c_str();
 
-	std::cout << v << f << std::endl;
-
 	unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
 	glShaderSource(vertexShader, 1, &v, NULL);
 	glCompileShader(vertexShader);

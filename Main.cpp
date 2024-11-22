@@ -92,16 +92,16 @@ int main()
 		-0.5f, 0.5f, -0.5f,		0.0f, 1.0f, 0.0f,		0.0f, 1.0f
 	};
 
-
 	Shader* shader = new Shader("vert.glsl", "frag.glsl");
-	Transform* cubeTransform = new Transform(glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.2f, 0.2f, 0.2f));
+	Transform* cubeTransform = new Transform(glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.3f, 0.3f, 0.3f));
+	Transform* lightTransform = new Transform(glm::vec3(1.f, 1.f, -1.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.1f, 0.1f, 0.1f));
 
 	TextureLoader* textureLoader = new TextureLoader();
 	textureLoader->loadTexture("images\\woodenbox.jpg");
 
 	playerCamera = new Camera(glm::vec3(0.f, 0.f, -3.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f), window, WIDTH, HEIGHT);
 
-
+	
 	unsigned int VBO;
 	glGenBuffers(1, &VBO);
 
@@ -111,6 +111,23 @@ int main()
 	glBindVertexArray(VAO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * rows * (3 + 3 + 2), vertices, GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 8, (void*)0);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 8, (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 8, (void*)(6 * sizeof(float)));
+	glEnableVertexAttribArray(2);
+	
+
+	unsigned int lightVBO;
+	glGenBuffers(1, &lightVBO);
+
+	unsigned int lightVAO;
+	glGenVertexArrays(1, &lightVAO);
+
+	glBindVertexArray(lightVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, lightVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float)* rows* (3 + 3 + 2), vertices, GL_STATIC_DRAW);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 8, (void*)0);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 8, (void*)(3 * sizeof(float)));
@@ -136,6 +153,8 @@ int main()
 
 		//1 куб
 		shader->useProgram();
+
+
 		glBindVertexArray(VAO);
 		glm::mat4 model = glm::mat4(1.f);
 		model = glm::translate(model, cubeTransform->getPosition());
@@ -143,7 +162,18 @@ int main()
 		glm::mat4 pvm = projection * view * model;
 		shader->setFloatMat4("pvm", pvm);
 		shader->setVec3("color", glm::vec3(0.5f, 0.f, 0.f));
-		shader->setVec3("lightPos", glm::vec3(3.f, 2.f, 1.f));
+		shader->setVec3("lightPos", lightTransform->getPosition());
+		shader->setVec3("lightColor", glm::vec3(1.f, 1.f, 1.f));
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		
+		glBindVertexArray(lightVAO);
+		glm::mat4 model1 = glm::mat4(1.f);
+		model1 = glm::translate(model1, lightTransform->getPosition());
+		model1 = glm::scale(model1, lightTransform->getScale());
+		shader->setVec3("lightPos", glm::vec3(0.f, 0.f, 0.f));
+		shader->setVec3("lightColor", glm::vec3(1.f, 1.f, 1.f));
+		glm::mat4 pvm1 = projection * view * model1;
+		shader->setFloatMat4("pvm", pvm1);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		glfwSetWindowSizeCallback(window, onResize);
