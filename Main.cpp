@@ -118,8 +118,6 @@ int main()
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 8, (void*)(6 * sizeof(float)));
 	glEnableVertexAttribArray(2);
 
-	glm::vec3 lightPos = glm::vec3(3.f, 2.f, 1.f);
-
 	while (!glfwWindowShouldClose(window))
 	{
 		glClearColor(0.0f, 0.1f, 0.3f, 1.0f);
@@ -145,6 +143,7 @@ int main()
 		glm::mat4 pvm = projection * view * model;
 		shader->setFloatMat4("pvm", pvm);
 		shader->setVec3("color", glm::vec3(0.5f, 0.f, 0.f));
+		shader->setVec3("lightPos", glm::vec3(3.f, 2.f, 1.f));
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		glfwSetWindowSizeCallback(window, onResize);
