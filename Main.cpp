@@ -93,8 +93,8 @@ int main()
 	};
 
 	Shader* shader = new Shader("vert.glsl", "frag.glsl");
-	Transform* cubeTransform = new Transform(glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.3f, 0.3f, 0.3f));
-	Transform* lightTransform = new Transform(glm::vec3(1.f, 1.f, -1.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.1f, 0.1f, 0.1f));
+	Transform* cubeTransform = new Transform(glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(1.3f, 1.3f, 1.3f));
+	Transform* lightTransform = new Transform(glm::vec3(1.f, 0.f, -1.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.1f, 0.1f, 0.1f));
 
 	TextureLoader* textureLoader = new TextureLoader();
 	textureLoader->loadTexture("images\\woodenbox.jpg");
@@ -135,6 +135,8 @@ int main()
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 8, (void*)(6 * sizeof(float)));
 	glEnableVertexAttribArray(2);
 
+	shader->useProgram();
+
 	while (!glfwWindowShouldClose(window))
 	{
 		glClearColor(0.0f, 0.1f, 0.3f, 1.0f);
@@ -152,26 +154,28 @@ int main()
 		projection = glm::perspective(glm::radians(45.0f), WIDTH/HEIGHT, 0.01f, 100.0f);
 
 		//1 куб
-		shader->useProgram();
-
-
 		glBindVertexArray(VAO);
 		glm::mat4 model = glm::mat4(1.f);
 		model = glm::translate(model, cubeTransform->getPosition());
 		model = glm::scale(model, cubeTransform->getScale());
 		glm::mat4 pvm = projection * view * model;
 		shader->setFloatMat4("pvm", pvm);
-		shader->setVec3("color", glm::vec3(0.5f, 0.f, 0.f));
 		shader->setVec3("lightPos", lightTransform->getPosition());
 		shader->setVec3("lightColor", glm::vec3(1.f, 1.f, 1.f));
+		shader->setVec3("color", glm::vec3(0.0f, 0.f, 0.f));
+		shader->setVec3("cameraPos", playerCamera->getPos());
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 		
 		glBindVertexArray(lightVAO);
 		glm::mat4 model1 = glm::mat4(1.f);
+		//model1 = glm::translate(model1, lightTransform->getPosition());
+		lightTransform->setPosition(glm::vec3(cos(glfwGetTime()), lightTransform->getPosition().y, sin(glfwGetTime())));
 		model1 = glm::translate(model1, lightTransform->getPosition());
 		model1 = glm::scale(model1, lightTransform->getScale());
 		shader->setVec3("lightPos", glm::vec3(0.f, 0.f, 0.f));
 		shader->setVec3("lightColor", glm::vec3(1.f, 1.f, 1.f));
+		shader->setVec3("color", glm::vec3(1.f, 1.f, 1.f));
+		shader->setVec3("cameraPos", playerCamera->getPos());
 		glm::mat4 pvm1 = projection * view * model1;
 		shader->setFloatMat4("pvm", pvm1);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
