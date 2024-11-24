@@ -8,12 +8,14 @@ out vec2 textureCoords;
 out vec3 normal1;
 out vec3 vertPos1;
 
-uniform mat4 pvm;
+uniform mat4 m;
+uniform mat4 v;
+uniform mat4 p;
 
 void main()
 {
-	gl_Position = pvm * vec4(aPos, 1.0f);
+	gl_Position = p * v * m * vec4(aPos, 1.0f);
 	textureCoords = textCoords;
-	normal1 = normalCoords;
-	vertPos1 = aPos;
+	normal1 = mat3(m) * normalCoords;
+	vertPos1 = mat3(m) * aPos;
 }

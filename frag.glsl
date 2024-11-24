@@ -14,12 +14,17 @@ in vec3 vertPos1;
 
 void main()
 {
+	vec3 ambientColor = lightColor * 0.15f;
+
 	vec3 light = -normalize(vertPos1 - lightPos);
 	vec3 norm = normalize(normal1);
 	float diffuseCoef = max(dot(light, norm), 0.f);
 	vec3 diffuseColor = lightColor * diffuseCoef;
-	vec3 ambientColor = lightColor * 0.15f;
-	vec3 specularColor = max(pow(dot(reflect(-light, norm), -normalize(vertPos1 - cameraPos)), 32), 0.f) * lightColor;
+
+	vec3 reflectedLight = reflect(-light, norm);
+	vec3 view = -normalize(vertPos1 - cameraPos);
+	float specularCoef = max(pow(dot(reflectedLight, view), 32), 0.f);
+	vec3 specularColor = specularCoef * lightColor;
 	if (color == vec3(0.f, 0.f, 0.f))
 	{
 		outColor = texture(objTexture, textureCoords) * vec4(ambientColor + diffuseColor + specularColor, 1.f);

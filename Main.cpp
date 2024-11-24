@@ -101,7 +101,6 @@ int main()
 
 	playerCamera = new Camera(glm::vec3(0.f, 0.f, -3.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f), window, WIDTH, HEIGHT);
 
-	
 	unsigned int VBO;
 	glGenBuffers(1, &VBO);
 
@@ -158,12 +157,14 @@ int main()
 		glm::mat4 model = glm::mat4(1.f);
 		model = glm::translate(model, cubeTransform->getPosition());
 		model = glm::scale(model, cubeTransform->getScale());
-		glm::mat4 pvm = projection * view * model;
-		shader->setFloatMat4("pvm", pvm);
+		//model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(0.f, 0.f, 1.f));
 		shader->setVec3("lightPos", lightTransform->getPosition());
 		shader->setVec3("lightColor", glm::vec3(1.f, 1.f, 1.f));
 		shader->setVec3("color", glm::vec3(0.0f, 0.f, 0.f));
 		shader->setVec3("cameraPos", playerCamera->getPos());
+		shader->setFloatMat4("p", projection);
+		shader->setFloatMat4("v", view);
+		shader->setFloatMat4("m", model);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 		
 		glBindVertexArray(lightVAO);
@@ -176,8 +177,9 @@ int main()
 		shader->setVec3("lightColor", glm::vec3(1.f, 1.f, 1.f));
 		shader->setVec3("color", glm::vec3(1.f, 1.f, 1.f));
 		shader->setVec3("cameraPos", playerCamera->getPos());
-		glm::mat4 pvm1 = projection * view * model1;
-		shader->setFloatMat4("pvm", pvm1);
+		shader->setFloatMat4("p", projection);
+		shader->setFloatMat4("v", view);
+		shader->setFloatMat4("m", model1);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		glfwSetWindowSizeCallback(window, onResize);
