@@ -18,6 +18,7 @@ public:
 	void setFloatMat4(std::string uniformPath, glm::mat4 matrix);
 	void setVec4(std::string uniformPath, glm::vec4 vector);
 	void setVec3(std::string uniformPath, glm::vec3 vector);
+	void setFloat(std::string uniformPath, float num);
 private:
 	unsigned int program;
 };

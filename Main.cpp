@@ -10,6 +10,7 @@
 #include "stb_image.h"
 #include "TextureLoader.h"
 #include "Camera.h"
+#include "Material.h"
 
 void onResize(GLFWwindow* window, int width, int height);
 void onMouse(GLFWwindow* window, double posx, double posy);
@@ -97,9 +98,16 @@ int main()
 	Transform* lightTransform = new Transform(glm::vec3(1.f, 0.f, -1.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.1f, 0.1f, 0.1f));
 
 	TextureLoader* textureLoader = new TextureLoader();
-	textureLoader->loadTexture("images\\woodenbox.jpg");
+	textureLoader->loadTexture("images\\emerald.png");
 
 	playerCamera = new Camera(glm::vec3(0.f, 0.f, -3.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f), window, WIDTH, HEIGHT);
+
+	Material* emerald = new Material(
+		glm::vec3(0.0215f, 0.1745f, 0.0215f), 
+		glm::vec3(0.07568f, 0.61424f, 0.07568f), 
+		glm::vec3(0.633f, 0.727811f, 0.633f), 
+		0.6f
+	);
 
 	unsigned int VBO;
 	glGenBuffers(1, &VBO);
@@ -138,7 +146,7 @@ int main()
 
 	while (!glfwWindowShouldClose(window))
 	{
-		glClearColor(0.0f, 0.1f, 0.3f, 1.0f);
+		glClearColor(0.0f, 0.075f, 0.15f, 1.f);
 		glClear(GL_COLOR_BUFFER_BIT);
 		glClear(GL_DEPTH_BUFFER_BIT);
 		processInput(window);
@@ -148,7 +156,7 @@ int main()
 		//создание видовой матрицы
 		view = playerCamera->rotate();
 		playerCamera->move(window);
-		//создание перспективной матрицы
+		//создание перспективного вида
 		glm::mat4 projection = glm::mat4(1.f);
 		projection = glm::perspective(glm::radians(45.0f), WIDTH/HEIGHT, 0.01f, 100.0f);
 
@@ -157,9 +165,10 @@ int main()
 		glm::mat4 model = glm::mat4(1.f);
 		model = glm::translate(model, cubeTransform->getPosition());
 		model = glm::scale(model, cubeTransform->getScale());
-		//model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(0.f, 0.f, 1.f));
+		model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(0.f, 0.f, 1.f));
+		lightTransform->setPosition(glm::vec3(cos(glfwGetTime()), cos(glfwGetTime()), sin(glfwGetTime())));
 		shader->setVec3("lightPos", lightTransform->getPosition());
-		shader->setVec3("lightColor", glm::vec3(1.f, 1.f, 1.f));
+		shader->setVec3("lightColor", glm::vec3(1.f, 1.f, 0.9f));
 		shader->setVec3("color", glm::vec3(0.0f, 0.f, 0.f));
 		shader->setVec3("cameraPos", playerCamera->getPos());
 		shader->setFloatMat4("p", projection);
@@ -168,18 +177,19 @@ int main()
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 		
 		glBindVertexArray(lightVAO);
-		glm::mat4 model1 = glm::mat4(1.f);
+		model = glm::mat4(1.f);
 		//model1 = glm::translate(model1, lightTransform->getPosition());
-		lightTransform->setPosition(glm::vec3(cos(glfwGetTime()), lightTransform->getPosition().y, sin(glfwGetTime())));
-		model1 = glm::translate(model1, lightTransform->getPosition());
-		model1 = glm::scale(model1, lightTransform->getScale());
-		shader->setVec3("lightPos", glm::vec3(0.f, 0.f, 0.f));
-		shader->setVec3("lightColor", glm::vec3(1.f, 1.f, 1.f));
-		shader->setVec3("color", glm::vec3(1.f, 1.f, 1.f));
-		shader->setVec3("cameraPos", playerCamera->getPos());
+
+		model = glm::translate(model, lightTransform->getPosition());
+		model = glm::scale(model, lightTransform->getScale());
+		shader->setVec3("color", glm::vec3(1.f, 1.f, 0.9f));
+		shader->setVec3("material.ambient", emerald->getAmbient());
+		shader->setVec3("material.diffuse", emerald->getDiffuse());
+		shader->setVec3("material.specular", emerald->getSpecular());
+		shader->setFloat("material.shininess", emerald->getShininess());
 		shader->setFloatMat4("p", projection);
 		shader->setFloatMat4("v", view);
-		shader->setFloatMat4("m", model1);
+		shader->setFloatMat4("m", model);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		glfwSetWindowSizeCallback(window, onResize);

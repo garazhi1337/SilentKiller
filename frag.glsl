@@ -9,25 +9,36 @@ uniform vec3 lightPos;
 uniform vec3 lightColor;
 uniform vec3 cameraPos;
 
+struct Material
+{
+	vec3 ambient;
+	vec3 diffuse;
+	vec3 specular;
+	float shininess;
+};
+
+uniform Material material;
+
 in vec3 normal1;
 in vec3 vertPos1;
 
 void main()
 {
-	vec3 ambientColor = lightColor * 0.15f;
+	vec3 ambientColor = lightColor * material.ambient;
 
 	vec3 light = -normalize(vertPos1 - lightPos);
 	vec3 norm = normalize(normal1);
 	float diffuseCoef = max(dot(light, norm), 0.f);
-	vec3 diffuseColor = lightColor * diffuseCoef;
+	vec3 diffuseColor = lightColor * diffuseCoef * material.diffuse;
 
 	vec3 reflectedLight = reflect(-light, norm);
 	vec3 view = -normalize(vertPos1 - cameraPos);
-	float specularCoef = max(pow(dot(reflectedLight, view), 32), 0.f);
-	vec3 specularColor = specularCoef * lightColor;
+	float specularCoef = max(pow(dot(reflectedLight, view), material.shininess * 128), 0.f);
+	vec3 specularColor = specularCoef * lightColor * material.specular;
 	if (color == vec3(0.f, 0.f, 0.f))
 	{
 		outColor = texture(objTexture, textureCoords) * vec4(ambientColor + diffuseColor + specularColor, 1.f);
+		//outColor = vec4(ambientColor + diffuseColor + specularColor, 1.f);
 	}
 	else
 	{

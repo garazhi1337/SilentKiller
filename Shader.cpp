@@ -119,3 +119,8 @@ void Shader::setVec3(std::string uniformPath, glm::vec3 vector)
 {
 	glUniform3f(glGetUniformLocation(program, uniformPath.c_str()), vector.x, vector.y, vector.z);
 }
+
+void Shader::setFloat(std::string uniformPath, float num)
+{
+	glUniform1f(glGetUniformLocation(program, uniformPath.c_str()), num);
+}
