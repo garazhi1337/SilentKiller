@@ -96,11 +96,13 @@ int main()
 	};
 
 	Shader* shader = new Shader("vert.glsl", "frag.glsl");
+	Shader* materialShader = new Shader("materialVert.glsl", "materialFrag.glsl");
 	shader->useProgram();
-	shader->setInt("objTexture1", 0);
-	shader->setInt("objTexture2", 1);
+	materialShader->useProgram();
+	materialShader->setInt("material.diffuseMap", 0);
+	materialShader->setInt("material.specularMap", 1);
 
-	Transform* cubeTransform = new Transform(glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(1.3f, 1.3f, 1.3f));
+	Transform* cubeTransform = new Transform(glm::vec3(0.f, -1.f, 0.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(1.3f, 1.3f, 1.3f));
 	Transform* lightTransform = new Transform(glm::vec3(1.f, 0.f, -1.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.1f, 0.1f, 0.1f));
 
 	unsigned int texture1;
@@ -111,7 +113,8 @@ int main()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	int width, height, channels;
-	unsigned char* data1 = stbi_load("images\\emerald.png", &width, &height, &channels, 0);
+	unsigned char* data1 = stbi_load("images\\container.png", &width, &height, &channels, 0);
+	stbi_set_flip_vertically_on_load(true);
 	//std::cout << *data << std::endl;
 	if (data1)
 	{
@@ -124,9 +127,6 @@ int main()
 		{
 			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data1);
 		}
-		
-
-
 	}
 	else
 	{
@@ -140,7 +140,7 @@ int main()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	unsigned char* data2 = stbi_load("images\\awesomeface.png", &width, &height, &channels, 0);
+	unsigned char* data2 = stbi_load("images\\steelpart.png", &width, &height, &channels, 0);
 	//std::cout << *data << std::endl;
 	if (data2)
 	{
@@ -152,8 +152,6 @@ int main()
 		{
 			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data2);
 		}
-
-
 	}
 	else
 	{
@@ -175,6 +173,20 @@ int main()
 		glm::vec3(0.07568f, 0.61424f, 0.07568f), 
 		glm::vec3(0.633f, 0.727811f, 0.633f), 
 		0.6f
+	);
+
+	Material* brass = new Material(
+		glm::vec3(0.329412f, 0.223529f,	0.027451f),
+		glm::vec3(0.780392f, 0.568627f,	0.113725f),
+		glm::vec3(0.992157f, 0.941176f, 0.807843f),
+		0.21794872f
+	);
+
+	Material* standard = new Material(
+		glm::vec3(0.2f, 0.2f, 0.2f),
+		glm::vec3(0.5f, 0.5f, 0.5f),
+		glm::vec3(1.f, 1.f, 1.f),
+		0.25f
 	);
 
 	Light* light = new Light(
@@ -235,39 +247,43 @@ int main()
 		glm::mat4 projection = glm::mat4(1.f);
 		projection = glm::perspective(glm::radians(45.0f), WIDTH/HEIGHT, 0.01f, 100.0f);
 
-		//1 куб
+		//тут будут осуществляться все действия с освещаемым объектом
 		glBindVertexArray(VAO);
+		materialShader->useProgram();
 		glm::mat4 model = glm::mat4(1.f);
 		model = glm::translate(model, cubeTransform->getPosition());
 		model = glm::scale(model, cubeTransform->getScale());
 		//model = glm::rotate(model, -(float)glfwGetTime() * 0.5f, glm::vec3(0.f, 0.f, 1.f));
-		lightTransform->setPosition(glm::vec3(cos(glfwGetTime()), 0.f, sin(glfwGetTime())));
-		shader->setVec3("light.position", lightTransform->getPosition());
-		shader->setVec3("light.ambient", light->getAmbient());
-		shader->setVec3("light.diffuse", light->getDiffuse());
-		shader->setVec3("light.specular", light->getSpecular());
-		shader->setVec3("color", glm::vec3(0.0f, 0.f, 0.f));
-		shader->setVec3("cameraPos", playerCamera->getPos());
-		shader->setFloatMat4("p", projection);
-		shader->setFloatMat4("v", view);
-		shader->setFloatMat4("m", model);
+		materialShader->setVec3("cameraPos", playerCamera->getPos());
+
+		materialShader->setVec3("material.ambient", standard->getAmbient());
+		materialShader->setVec3("material.diffuse", standard->getDiffuse());
+		materialShader->setVec3("material.specular", standard->getSpecular());
+		materialShader->setFloat("material.shininess", standard->getShininess());
+
+		materialShader->setVec3("light.ambient", light->getAmbient());
+		materialShader->setVec3("light.diffuse", light->getDiffuse());
+		materialShader->setVec3("light.specular", light->getSpecular());
+		materialShader->setVec3("light.position", lightTransform->getPosition());
+
+		materialShader->setFloatMat4("p", projection);
+		materialShader->setFloatMat4("v", view);
+		materialShader->setFloatMat4("m", model);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 		
+		//тут будут осуществляться все действия с источником света
 		glBindVertexArray(lightVAO);
+		shader->useProgram();
 		model = glm::mat4(1.f);
-		//model1 = glm::translate(model1, lightTransform->getPosition());
-
+		lightTransform->setPosition(glm::vec3(cos(glfwGetTime()) * 2.5f, -1.f, sin(glfwGetTime()) * 2.5f));
 		model = glm::translate(model, lightTransform->getPosition());
 		model = glm::scale(model, lightTransform->getScale());
-		shader->setVec3("color", glm::vec3(1.f, 1.f, 0.9f));
-		shader->setVec3("material.ambient", emerald->getAmbient());
-		shader->setVec3("material.diffuse", emerald->getDiffuse());
-		shader->setVec3("material.specular", emerald->getSpecular());
-		shader->setFloat("material.shininess", emerald->getShininess());
 
+		shader->setVec3("color", light->getAmbient());
 		shader->setFloatMat4("p", projection);
 		shader->setFloatMat4("v", view);
 		shader->setFloatMat4("m", model);
+
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		glfwSetWindowSizeCallback(window, onResize);
@@ -290,8 +306,6 @@ void onMouse(GLFWwindow* window, double posx, double posy)
 {
 	playerCamera->onMouse(window, posx, posy);
 }
-
-
 
 void processInput(GLFWwindow* window)
 {
