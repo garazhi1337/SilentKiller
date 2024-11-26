@@ -19,6 +19,7 @@ public:
 	void setVec4(std::string uniformPath, glm::vec4 vector);
 	void setVec3(std::string uniformPath, glm::vec3 vector);
 	void setFloat(std::string uniformPath, float num);
+	void setInt(std::string uniformPath, int num);
 private:
 	unsigned int program;
 };

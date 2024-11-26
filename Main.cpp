@@ -11,6 +11,7 @@
 #include "TextureLoader.h"
 #include "Camera.h"
 #include "Material.h"
+#include "Light.h"
 
 void onResize(GLFWwindow* window, int width, int height);
 void onMouse(GLFWwindow* window, double posx, double posy);
@@ -21,6 +22,7 @@ Camera* playerCamera;
 
 int main()
 {
+
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -94,11 +96,77 @@ int main()
 	};
 
 	Shader* shader = new Shader("vert.glsl", "frag.glsl");
+	shader->useProgram();
+	shader->setInt("objTexture1", 0);
+	shader->setInt("objTexture2", 1);
+
 	Transform* cubeTransform = new Transform(glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(1.3f, 1.3f, 1.3f));
 	Transform* lightTransform = new Transform(glm::vec3(1.f, 0.f, -1.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.1f, 0.1f, 0.1f));
 
-	TextureLoader* textureLoader = new TextureLoader();
-	textureLoader->loadTexture("images\\emerald.png");
+	unsigned int texture1;
+	glGenTextures(1, &texture1);
+	glBindTexture(GL_TEXTURE_2D, texture1);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	int width, height, channels;
+	unsigned char* data1 = stbi_load("images\\emerald.png", &width, &height, &channels, 0);
+	//std::cout << *data << std::endl;
+	if (data1)
+	{
+		//сделать в классе шейдер в униформу текстуры потом
+		if (channels == 3)
+		{
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data1);
+		}
+		else
+		{
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data1);
+		}
+		
+
+
+	}
+	else
+	{
+		std::cout << "Failed to load texture *quq quq*" << std::endl;
+	}
+
+	unsigned int texture2;
+	glGenTextures(1, &texture2);
+	glBindTexture(GL_TEXTURE_2D, texture2);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	unsigned char* data2 = stbi_load("images\\awesomeface.png", &width, &height, &channels, 0);
+	//std::cout << *data << std::endl;
+	if (data2)
+	{
+		if (channels == 3)
+		{
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data2);
+		}
+		else
+		{
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data2);
+		}
+
+
+	}
+	else
+	{
+		std::cout << "Failed to load texture *quq quq*" << std::endl;
+	}
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texture1);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, texture2);
+
+	stbi_image_free(data1);
+	stbi_image_free(data2);
 
 	playerCamera = new Camera(glm::vec3(0.f, 0.f, -3.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f), window, WIDTH, HEIGHT);
 
@@ -107,6 +175,13 @@ int main()
 		glm::vec3(0.07568f, 0.61424f, 0.07568f), 
 		glm::vec3(0.633f, 0.727811f, 0.633f), 
 		0.6f
+	);
+
+	Light* light = new Light(
+		glm::vec3(0.f, 0.f, 0.f),
+		glm::vec3(1.f, 1.f, 1.f),
+		glm::vec3(1.f, 1.f, 1.f),
+		glm::vec3(1.f, 1.f, 1.f)
 	);
 
 	unsigned int VBO;
@@ -142,7 +217,7 @@ int main()
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 8, (void*)(6 * sizeof(float)));
 	glEnableVertexAttribArray(2);
 
-	shader->useProgram();
+
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -165,10 +240,12 @@ int main()
 		glm::mat4 model = glm::mat4(1.f);
 		model = glm::translate(model, cubeTransform->getPosition());
 		model = glm::scale(model, cubeTransform->getScale());
-		model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(0.f, 0.f, 1.f));
-		lightTransform->setPosition(glm::vec3(cos(glfwGetTime()), cos(glfwGetTime()), sin(glfwGetTime())));
-		shader->setVec3("lightPos", lightTransform->getPosition());
-		shader->setVec3("lightColor", glm::vec3(1.f, 1.f, 0.9f));
+		//model = glm::rotate(model, -(float)glfwGetTime() * 0.5f, glm::vec3(0.f, 0.f, 1.f));
+		lightTransform->setPosition(glm::vec3(cos(glfwGetTime()), 0.f, sin(glfwGetTime())));
+		shader->setVec3("light.position", lightTransform->getPosition());
+		shader->setVec3("light.ambient", light->getAmbient());
+		shader->setVec3("light.diffuse", light->getDiffuse());
+		shader->setVec3("light.specular", light->getSpecular());
 		shader->setVec3("color", glm::vec3(0.0f, 0.f, 0.f));
 		shader->setVec3("cameraPos", playerCamera->getPos());
 		shader->setFloatMat4("p", projection);
@@ -187,6 +264,7 @@ int main()
 		shader->setVec3("material.diffuse", emerald->getDiffuse());
 		shader->setVec3("material.specular", emerald->getSpecular());
 		shader->setFloat("material.shininess", emerald->getShininess());
+
 		shader->setFloatMat4("p", projection);
 		shader->setFloatMat4("v", view);
 		shader->setFloatMat4("m", model);

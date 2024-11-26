@@ -39,12 +39,21 @@
     <ClCompile Include="Material.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
+    <ClCompile Include="Light.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="vert.glsl">
       <Filter>Исходные файлы\Shaders</Filter>
     </None>
     <None Include="frag.glsl">
+      <Filter>Исходные файлы\Shaders</Filter>
+    </None>
+    <None Include="materialFrag.glsl">
+      <Filter>Исходные файлы\Shaders</Filter>
+    </None>
+    <None Include="materialVert.glsl">
       <Filter>Исходные файлы\Shaders</Filter>
     </None>
   </ItemGroup>
@@ -62,6 +71,9 @@
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
     <ClInclude Include="Material.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="Light.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>

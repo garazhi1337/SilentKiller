@@ -124,3 +124,8 @@ void Shader::setFloat(std::string uniformPath, float num)
 {
 	glUniform1f(glGetUniformLocation(program, uniformPath.c_str()), num);
 }
+
+void Shader::setInt(std::string uniformPath, int num)
+{
+	glUniform1i(glGetUniformLocation(program, uniformPath.c_str()), num);
+}
