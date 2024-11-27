@@ -80,8 +80,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>C:\Users\user\source\repos\SilentKiller\Libraries\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\user\source\repos\SilentKiller\Libraries\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Users\student\source\repos\SilentKiller\Libraries\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\student\source\repos\SilentKiller\Libraries\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>

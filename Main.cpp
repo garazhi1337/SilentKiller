@@ -2,6 +2,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
+#include <vector>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include "Shader.h"
@@ -95,6 +96,15 @@ int main()
 		-0.5f, 0.5f, -0.5f,		0.0f, 1.0f, 0.0f,		0.0f, 1.0f
 	};
 
+	std::srand(std::time(nullptr));
+	std::vector<Transform*> boxes;
+	for (int i = 0; i < 10; i++)
+	{
+		//float size = 0.1f + rand() % 2;
+		Transform* cubeTransform = new Transform(glm::vec3(-3 + rand() % 6, -3 + rand() % 6, -3 + rand() % 6), glm::vec3(0.f, 0.f, 0.f), glm::vec3(1.f, 1.f, 1.f));
+		boxes.push_back(cubeTransform);
+	}
+
 	Shader* shader = new Shader("vert.glsl", "frag.glsl");
 	Shader* materialShader = new Shader("materialVert.glsl", "materialFrag.glsl");
 	shader->useProgram();
@@ -102,15 +112,15 @@ int main()
 	materialShader->setInt("material.diffuseMap", 0);
 	materialShader->setInt("material.specularMap", 1);
 
-	Transform* cubeTransform = new Transform(glm::vec3(0.f, -1.f, 0.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(1.3f, 1.3f, 1.3f));
-	Transform* lightTransform = new Transform(glm::vec3(1.f, 0.f, -1.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.1f, 0.1f, 0.1f));
+	//Transform* cubeTransform = new Transform(glm::vec3(0.f, -1.f, 0.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(1.3f, 1.3f, 1.3f));
+	Transform* lightTransform = new Transform(glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.1f, 0.1f, 0.1f));
 
 	unsigned int texture1;
 	glGenTextures(1, &texture1);
 	glBindTexture(GL_TEXTURE_2D, texture1);
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 	int width, height, channels;
 	unsigned char* data1 = stbi_load("images\\container.png", &width, &height, &channels, 0);
@@ -137,8 +147,8 @@ int main()
 	glGenTextures(1, &texture2);
 	glBindTexture(GL_TEXTURE_2D, texture2);
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 	unsigned char* data2 = stbi_load("images\\steelpart.png", &width, &height, &channels, 0);
 	//std::cout << *data << std::endl;
@@ -251,9 +261,10 @@ int main()
 		glBindVertexArray(VAO);
 		materialShader->useProgram();
 		glm::mat4 model = glm::mat4(1.f);
-		model = glm::translate(model, cubeTransform->getPosition());
-		model = glm::scale(model, cubeTransform->getScale());
+		//model = glm::translate(model, cubeTransfsdorm->getPosition());
+		//model = glm::scale(model, cubeTransform->getScale());
 		//model = glm::rotate(model, -(float)glfwGetTime() * 0.5f, glm::vec3(0.f, 0.f, 1.f));
+
 		materialShader->setVec3("cameraPos", playerCamera->getPos());
 
 		materialShader->setVec3("material.ambient", standard->getAmbient());
@@ -266,23 +277,31 @@ int main()
 		materialShader->setVec3("light.specular", light->getSpecular());
 		materialShader->setVec3("light.position", lightTransform->getPosition());
 
+		for (auto box : boxes)
+		{
+			model = glm::mat4(1.f);
+			model = glm::translate(model, box->getPosition());
+			model = glm::scale(model, box->getScale());
+			materialShader->setFloatMat4("m", model);
+
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+		}
+
 		materialShader->setFloatMat4("p", projection);
 		materialShader->setFloatMat4("v", view);
-		materialShader->setFloatMat4("m", model);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
 		
 		//тут будут осуществляться все действия с источником света
 		glBindVertexArray(lightVAO);
 		shader->useProgram();
 		model = glm::mat4(1.f);
-		lightTransform->setPosition(glm::vec3(cos(glfwGetTime()) * 2.5f, -1.f, sin(glfwGetTime()) * 2.5f));
+		lightTransform->setPosition(glm::vec3(sin(glfwGetTime()), lightTransform->getPosition().y, cos(glfwGetTime())));
 		model = glm::translate(model, lightTransform->getPosition());
 		model = glm::scale(model, lightTransform->getScale());
 
 		shader->setVec3("color", light->getAmbient());
-		shader->setFloatMat4("p", projection);
-		shader->setFloatMat4("v", view);
-		shader->setFloatMat4("m", model);
+		shader->setFloatMat4("p1", projection);
+		shader->setFloatMat4("v1", view);
+		shader->setFloatMat4("m1", model);
 
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
