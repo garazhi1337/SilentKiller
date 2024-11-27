@@ -22,7 +22,6 @@ public:
 	glm::mat4 rotate();
 	void move(GLFWwindow* window);
 
-
 private:
 	glm::vec3 cameraPos;
 	glm::vec3 cameraFront;

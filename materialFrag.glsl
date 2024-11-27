@@ -18,6 +18,7 @@ uniform Material material;
 
 struct Light
 {
+	vec3 direction;
 	vec3 position;
 	vec3 ambient;
 	vec3 diffuse;
@@ -32,7 +33,7 @@ void main()
 {
 	vec3 ambientColor = light.ambient * vec3(texture(material.diffuseMap, textureCoords)) * material.ambient;
 
-	vec3 lightVec = -normalize(vertPos1 - light.position);
+	vec3 lightVec = -normalize(light.direction);
 	vec3 norm = normalize(normal1);
 	float diffuseCoef = max(dot(lightVec, norm), 0.f);
 	vec3 diffuseColor = diffuseCoef * light.diffuse * vec3(texture(material.diffuseMap, textureCoords)) * material.diffuse;

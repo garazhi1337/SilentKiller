@@ -13,17 +13,20 @@
 #include "Camera.h"
 #include "Material.h"
 #include "Light.h"
+#include "DirectionalLight.h"
 
 void onResize(GLFWwindow* window, int width, int height);
 void onMouse(GLFWwindow* window, double posx, double posy);
 void processInput(GLFWwindow* window);
+float randFloat(float min, float max);
+glm::vec3 randSphericPosition(float x0, float y0, float z0, float minRadius, float maxRadius);
 const float WIDTH = 720.f;
 const float HEIGHT = 720.f;
 Camera* playerCamera;
 
 int main()
 {
-
+	std::srand(std::time(nullptr));
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -98,10 +101,16 @@ int main()
 
 	std::srand(std::time(nullptr));
 	std::vector<Transform*> boxes;
-	for (int i = 0; i < 10; i++)
+	for (int i = 0; i < 25; i++)
 	{
-		//float size = 0.1f + rand() % 2;
-		Transform* cubeTransform = new Transform(glm::vec3(-3 + rand() % 6, -3 + rand() % 6, -3 + rand() % 6), glm::vec3(0.f, 0.f, 0.f), glm::vec3(1.f, 1.f, 1.f));
+		float size = randFloat(0.3f, 1.1f);
+		glm::vec3 rotation = glm::vec3(randFloat(0.f, 360.f), randFloat(0.f, 360.f), randFloat(0.f, 360.f));
+		Transform* cubeTransform = new Transform(
+			glm::vec3(randSphericPosition(0.f, 0.f, 0.f, 3.f, 4.f)),
+			glm::vec3(1.f, 1.f, 1.f), 
+			glm::vec3(1.f, 1.f, 1.f) * size,
+			rotation
+		);
 		boxes.push_back(cubeTransform);
 	}
 
@@ -112,8 +121,15 @@ int main()
 	materialShader->setInt("material.diffuseMap", 0);
 	materialShader->setInt("material.specularMap", 1);
 
-	//Transform* cubeTransform = new Transform(glm::vec3(0.f, -1.f, 0.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(1.3f, 1.3f, 1.3f));
-	Transform* lightTransform = new Transform(glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.1f, 0.1f, 0.1f));
+	//Transform* cubeTransform = new Transform(glm::vec3(0.f, -1.f, 0.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(1.f, 1.f, 1.f));
+	/*
+	Transform* lightTransform = new Transform(
+		glm::vec3(0.f, 0.0f, 0.f), 
+		glm::vec3(0.f, 0.f, 0.f), 
+		glm::vec3(0.1f, 0.1f, 0.1f), 
+		glm::vec3(0.f, 0.f, 0.f)
+	);
+	*/
 
 	unsigned int texture1;
 	glGenTextures(1, &texture1);
@@ -199,12 +215,26 @@ int main()
 		0.25f
 	);
 
+	/*	
 	Light* light = new Light(
-		glm::vec3(0.f, 0.f, 0.f),
+	glm::vec3(0.f, 0.f, 0.f),
+	glm::vec3(1.f, 1.f, 1.f),
+	glm::vec3(1.f, 1.f, 1.f),
+	glm::vec3(1.f, 1.f, 1.f)
+	);
+	*/
+
+	DirectionalLight* light = new DirectionalLight(
+		glm::vec3(-0.3f, -0.2f, -0.1f),
 		glm::vec3(1.f, 1.f, 1.f),
 		glm::vec3(1.f, 1.f, 1.f),
 		glm::vec3(1.f, 1.f, 1.f)
 	);
+
+	std::cout << light->getAmbient().x << std::endl;
+	std::cout << light->getDiffuse().x << std::endl;
+	std::cout << light->getSpecular().x << std::endl;
+	std::cout << light->getDirection().x << std::endl;
 
 	unsigned int VBO;
 	glGenBuffers(1, &VBO);
@@ -261,7 +291,7 @@ int main()
 		glBindVertexArray(VAO);
 		materialShader->useProgram();
 		glm::mat4 model = glm::mat4(1.f);
-		//model = glm::translate(model, cubeTransfsdorm->getPosition());
+		//model = glm::translate(model, cubeTransform->getPosition());
 		//model = glm::scale(model, cubeTransform->getScale());
 		//model = glm::rotate(model, -(float)glfwGetTime() * 0.5f, glm::vec3(0.f, 0.f, 1.f));
 
@@ -275,35 +305,36 @@ int main()
 		materialShader->setVec3("light.ambient", light->getAmbient());
 		materialShader->setVec3("light.diffuse", light->getDiffuse());
 		materialShader->setVec3("light.specular", light->getSpecular());
-		materialShader->setVec3("light.position", lightTransform->getPosition());
+		materialShader->setVec3("light.direction", light->getDirection());
 
 		for (auto box : boxes)
 		{
 			model = glm::mat4(1.f);
 			model = glm::translate(model, box->getPosition());
 			model = glm::scale(model, box->getScale());
+			model = glm::rotate(model, glm::radians(box->getAngles().x), glm::vec3(1.f, 0.f, 0.f));
+			model = glm::rotate(model, glm::radians(box->getAngles().y), glm::vec3(0.f, 1.f, 0.f));
+			model = glm::rotate(model, glm::radians(box->getAngles().z), glm::vec3(1.f, 0.f, 1.f));
 			materialShader->setFloatMat4("m", model);
-
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
 
 		materialShader->setFloatMat4("p", projection);
 		materialShader->setFloatMat4("v", view);
-		
 		//тут будут осуществляться все действия с источником света
+		/*
 		glBindVertexArray(lightVAO);
 		shader->useProgram();
 		model = glm::mat4(1.f);
-		lightTransform->setPosition(glm::vec3(sin(glfwGetTime()), lightTransform->getPosition().y, cos(glfwGetTime())));
+		lightTransform->setPosition(glm::vec3(sin(glfwGetTime() * 5) * 10, lightTransform->getPosition().y, cos(glfwGetTime() * 5) * 10));
 		model = glm::translate(model, lightTransform->getPosition());
 		model = glm::scale(model, lightTransform->getScale());
-
 		shader->setVec3("color", light->getAmbient());
 		shader->setFloatMat4("p1", projection);
 		shader->setFloatMat4("v1", view);
 		shader->setFloatMat4("m1", model);
-
 		glDrawArrays(GL_TRIANGLES, 0, 36);
+		*/
 
 		glfwSetWindowSizeCallback(window, onResize);
 		glfwSetCursorPosCallback(window, onMouse);
@@ -320,14 +351,36 @@ void onResize(GLFWwindow* window, int width, int height)
 {
 	glViewport(0, 0, width, height);
 }
-
 void onMouse(GLFWwindow* window, double posx, double posy)
+
 {
 	playerCamera->onMouse(window, posx, posy);
-}
 
+}
 void processInput(GLFWwindow* window)
 {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
+}
+
+float randFloat(float min, float max)
+{
+	float num = min + rand() * (max - min) / RAND_MAX;
+	return num;
+}
+
+glm::vec3 randSphericPosition(float x0, float y0, float z0, float minRadius, float maxRadius)
+{
+	float x = randFloat(-maxRadius, maxRadius);
+	float y = randFloat(-maxRadius, maxRadius);
+	float z = randFloat(-maxRadius, maxRadius);
+	float checkRadius = (float) sqrt(pow(x, 2) + pow(y, 2) + pow(z, 2));
+	while ((checkRadius < minRadius || checkRadius > maxRadius))
+	{
+		x = randFloat(-maxRadius, maxRadius);
+		y = randFloat(-maxRadius, maxRadius);
+		z = randFloat(-maxRadius, maxRadius);
+		checkRadius = (float)sqrt(pow(x, 2) + pow(y, 2) + pow(z, 2));
+	}
+	return glm::vec3(x + x0, y + y0, z + z0);
 }

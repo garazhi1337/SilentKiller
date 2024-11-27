@@ -8,7 +8,6 @@ Material::Material(glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular, flo
 	this->shininess = shininess;
 }
 
-
 void Material::setAmbient(glm::vec3 ambient)
 {
 	this->ambient = ambient;
