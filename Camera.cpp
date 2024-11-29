@@ -89,7 +89,7 @@ void Camera::move(GLFWwindow* window)
 	float currentFrame = glfwGetTime();
 	deltaTime = currentFrame - lastFrame;
 	lastFrame = currentFrame;
-	//std::cout << "FPS: " << 1.f / deltaTime << std::endl;
+	std::cout << "FPS: " << 1.f / deltaTime << std::endl;
 
 	const float cameraSpeed = 2.5f * deltaTime;
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)

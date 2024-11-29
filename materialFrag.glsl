@@ -18,11 +18,18 @@ uniform Material material;
 
 struct Light
 {
-	vec3 direction;
-	vec3 position;
+	vec3 direction; //для направленного света
+	vec3 position; //для прожекторного и точечного света
 	vec3 ambient;
 	vec3 diffuse;
 	vec3 specular;
+
+	float constant;
+	float linear;
+	float quadratic;
+
+	int mode; //1 - направленный свет 2 - точечный свет 3 - прожектор
+
 };
 uniform Light light;
 
@@ -31,20 +38,58 @@ in vec3 vertPos1;
 
 void main()
 {
-	vec3 ambientColor = light.ambient * vec3(texture(material.diffuseMap, textureCoords)) * material.ambient;
+	if (mode == 1)
+	{
+		vec3 ambientColor = light.ambient * vec3(texture(material.diffuseMap, textureCoords)) * material.ambient;
 
-	vec3 lightVec = -normalize(light.direction);
-	vec3 norm = normalize(normal1);
-	float diffuseCoef = max(dot(lightVec, norm), 0.f);
-	vec3 diffuseColor = diffuseCoef * light.diffuse * vec3(texture(material.diffuseMap, textureCoords)) * material.diffuse;
+		//vec3 lightVec = -normalize(light.direction);
+		vec3 lightVec = -normalize(light.direction);
+		vec3 norm = normalize(normal1);
+		float diffuseCoef = max(dot(lightVec, norm), 0.f);
+		vec3 diffuseColor = diffuseCoef * light.diffuse * vec3(texture(material.diffuseMap, textureCoords)) * material.diffuse;
 
-	vec3 reflectedLight = reflect(-lightVec, norm);
-	vec3 view = -normalize(vertPos1 - cameraPos);
-	float specularCoef = max(pow(dot(reflectedLight, view), material.shininess * 128.f), 0.f);
-	vec3 specularColor = specularCoef * light.specular * vec3(texture(material.specularMap, textureCoords)) * material.specular;
+		vec3 reflectedLight = reflect(-lightVec, norm);
+		vec3 view = -normalize(vertPos1 - cameraPos);
+		float specularCoef = max(pow(dot(reflectedLight, view), material.shininess * 128.f), 0.f);
+		vec3 specularColor = specularCoef * light.specular * vec3(texture(material.specularMap, textureCoords)) * material.specular;
 
-	outColor = vec4(ambientColor + diffuseColor + specularColor, 1.f);
-	//outColor = mix(texture(objTexture1, textureCoords), texture(objTexture2, textureCoords), 0.5f);
-	//outColor = vec4(ambientColor + diffuseColor + specularColor, 1.f);
+		float dist = length(light.position - vertPos1);
+		float attenuation = 1.f / (light.constant + light.linear * dist + light.quadratic * (dist * dist));
+
+		ambientColor *= attenuation;
+		diffuseColor *= attenuation;
+		specularColor *= attenuation;
+
+		outColor = vec4(ambientColor + diffuseColor + specularColor, 1.f);
+	}
+	else if (mode == 2)
+	{
+		vec3 ambientColor = light.ambient * vec3(texture(material.diffuseMap, textureCoords)) * material.ambient;
+
+		//vec3 lightVec = -normalize(light.direction);
+		vec3 lightVec = -normalize(vertPos1 - light.position);
+		vec3 norm = normalize(normal1);
+		float diffuseCoef = max(dot(lightVec, norm), 0.f);
+		vec3 diffuseColor = diffuseCoef * light.diffuse * vec3(texture(material.diffuseMap, textureCoords)) * material.diffuse;
+
+		vec3 reflectedLight = reflect(-lightVec, norm);
+		vec3 view = -normalize(vertPos1 - cameraPos);
+		float specularCoef = max(pow(dot(reflectedLight, view), material.shininess * 128.f), 0.f);
+		vec3 specularColor = specularCoef * light.specular * vec3(texture(material.specularMap, textureCoords)) * material.specular;
+
+		float dist = length(light.position - vertPos1);
+		float attenuation = 1.f / (light.constant + light.linear * dist + light.quadratic * (dist * dist));
+
+		ambientColor *= attenuation;
+		diffuseColor *= attenuation;
+		specularColor *= attenuation;
+
+		outColor = vec4(ambientColor + diffuseColor + specularColor, 1.f);
+	}
+	else if (mode == 3)
+	{
+
+	}
+
 
 }

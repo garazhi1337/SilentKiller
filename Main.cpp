@@ -101,13 +101,13 @@ int main()
 
 	std::srand(std::time(nullptr));
 	std::vector<Transform*> boxes;
-	for (int i = 0; i < 25; i++)
+	for (int i = 0; i < 1000; i++)
 	{
 		float size = randFloat(0.3f, 1.1f);
 		glm::vec3 rotation = glm::vec3(randFloat(0.f, 360.f), randFloat(0.f, 360.f), randFloat(0.f, 360.f));
 		Transform* cubeTransform = new Transform(
-			glm::vec3(randSphericPosition(0.f, 0.f, 0.f, 3.f, 4.f)),
-			glm::vec3(1.f, 1.f, 1.f), 
+			glm::vec3(randSphericPosition(0.f, 0.f, 0.f, 5.f, 10.f)),
+			glm::vec3(1.f, 1.f, 1.f),
 			glm::vec3(1.f, 1.f, 1.f) * size,
 			rotation
 		);
@@ -122,14 +122,13 @@ int main()
 	materialShader->setInt("material.specularMap", 1);
 
 	//Transform* cubeTransform = new Transform(glm::vec3(0.f, -1.f, 0.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(1.f, 1.f, 1.f));
-	/*
+
 	Transform* lightTransform = new Transform(
 		glm::vec3(0.f, 0.0f, 0.f), 
 		glm::vec3(0.f, 0.f, 0.f), 
 		glm::vec3(0.1f, 0.1f, 0.1f), 
 		glm::vec3(0.f, 0.f, 0.f)
 	);
-	*/
 
 	unsigned int texture1;
 	glGenTextures(1, &texture1);
@@ -225,7 +224,7 @@ int main()
 	*/
 
 	DirectionalLight* light = new DirectionalLight(
-		glm::vec3(-0.3f, -0.2f, -0.1f),
+		glm::vec3(-1.f, -1.f, -1.f),
 		glm::vec3(1.f, 1.f, 1.f),
 		glm::vec3(1.f, 1.f, 1.f),
 		glm::vec3(1.f, 1.f, 1.f)
@@ -306,6 +305,10 @@ int main()
 		materialShader->setVec3("light.diffuse", light->getDiffuse());
 		materialShader->setVec3("light.specular", light->getSpecular());
 		materialShader->setVec3("light.direction", light->getDirection());
+		materialShader->setVec3("light.position", lightTransform->getPosition());
+		materialShader->setFloat("light.constant", 1.f);
+		materialShader->setFloat("light.linear", 0.09f);
+		materialShader->setFloat("light.quadratic", 0.032f);
 
 		for (auto box : boxes)
 		{
@@ -316,13 +319,15 @@ int main()
 			model = glm::rotate(model, glm::radians(box->getAngles().y), glm::vec3(0.f, 1.f, 0.f));
 			model = glm::rotate(model, glm::radians(box->getAngles().z), glm::vec3(1.f, 0.f, 1.f));
 			materialShader->setFloatMat4("m", model);
+			materialShader->setFloatMat4("p", projection);
+			materialShader->setFloatMat4("v", view);
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
 
 		materialShader->setFloatMat4("p", projection);
 		materialShader->setFloatMat4("v", view);
+
 		//тут будут осуществляться все действия с источником света
-		/*
 		glBindVertexArray(lightVAO);
 		shader->useProgram();
 		model = glm::mat4(1.f);
@@ -334,7 +339,6 @@ int main()
 		shader->setFloatMat4("v1", view);
 		shader->setFloatMat4("m1", model);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
-		*/
 
 		glfwSetWindowSizeCallback(window, onResize);
 		glfwSetCursorPosCallback(window, onMouse);
