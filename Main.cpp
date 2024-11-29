@@ -224,7 +224,7 @@ int main()
 	*/
 
 	DirectionalLight* light = new DirectionalLight(
-		glm::vec3(-1.f, -1.f, -1.f),
+		glm::vec3(-1.f, -1.f, -3.f),
 		glm::vec3(1.f, 1.f, 1.f),
 		glm::vec3(1.f, 1.f, 1.f),
 		glm::vec3(1.f, 1.f, 1.f)
@@ -305,10 +305,15 @@ int main()
 		materialShader->setVec3("light.diffuse", light->getDiffuse());
 		materialShader->setVec3("light.specular", light->getSpecular());
 		materialShader->setVec3("light.direction", light->getDirection());
-		materialShader->setVec3("light.position", lightTransform->getPosition());
+		materialShader->setVec3("light.position", playerCamera->getPos());
 		materialShader->setFloat("light.constant", 1.f);
-		materialShader->setFloat("light.linear", 0.09f);
-		materialShader->setFloat("light.quadratic", 0.032f);
+		materialShader->setFloat("light.linear", 0.065f);
+		materialShader->setFloat("light.quadratic", 0.01f);
+		materialShader->setFloat("light.outerRadius", glm::radians(17.5f));
+		materialShader->setFloat("light.innerRadius", glm::radians(12.5f));
+		materialShader->setVec3("light.spotlightDir", glm::vec3(0.f, 0.f, 1.f));
+		materialShader->setVec3("light.cameraDir", playerCamera->getFront() - glm::vec3(0.f, 0.12f, 0.f));
+		materialShader->setInt("light.mode", 3);
 
 		for (auto box : boxes)
 		{
@@ -331,14 +336,14 @@ int main()
 		glBindVertexArray(lightVAO);
 		shader->useProgram();
 		model = glm::mat4(1.f);
-		lightTransform->setPosition(glm::vec3(sin(glfwGetTime() * 5) * 10, lightTransform->getPosition().y, cos(glfwGetTime() * 5) * 10));
+		//lightTransform->setPosition(glm::vec3(sin(glfwGetTime() * 5) * 10, lightTransform->getPosition().y, cos(glfwGetTime() * 5) * 10));
 		model = glm::translate(model, lightTransform->getPosition());
 		model = glm::scale(model, lightTransform->getScale());
 		shader->setVec3("color", light->getAmbient());
 		shader->setFloatMat4("p1", projection);
 		shader->setFloatMat4("v1", view);
 		shader->setFloatMat4("m1", model);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+		//glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		glfwSetWindowSizeCallback(window, onResize);
 		glfwSetCursorPosCallback(window, onMouse);
