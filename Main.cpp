@@ -5,6 +5,9 @@
 #include <vector>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
 #include "Shader.h"
 #include "Transform.h"
 #define STB_IMAGE_IMPLEMENTATION
@@ -14,6 +17,8 @@
 #include "Material.h"
 #include "Light.h"
 #include "DirectionalLight.h"
+
+
 
 void onResize(GLFWwindow* window, int width, int height);
 void onMouse(GLFWwindow* window, double posx, double posy);

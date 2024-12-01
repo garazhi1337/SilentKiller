@@ -119,6 +119,4 @@ void main()
 			outColor = vec4(ambientColor, 1.f);
 		}
 	}
-
-
 }
