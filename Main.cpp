@@ -369,7 +369,6 @@ void onMouse(GLFWwindow* window, double posx, double posy)
 
 {
 	playerCamera->onMouse(window, posx, posy);
-
 }
 void processInput(GLFWwindow* window)
 {
