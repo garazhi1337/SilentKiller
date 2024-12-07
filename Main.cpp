@@ -17,7 +17,7 @@
 #include "Material.h"
 #include "Light.h"
 #include "DirectionalLight.h"
-
+#include "Model.h"
 
 
 void onResize(GLFWwindow* window, int width, int height);
@@ -127,6 +127,7 @@ int main()
 	materialShader->setInt("material.specularMap", 1);
 
 	//Transform* cubeTransform = new Transform(glm::vec3(0.f, -1.f, 0.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(1.f, 1.f, 1.f));
+	Model* ball = new Model("models/test.obj");
 
 	Transform* lightTransform = new Transform(
 		glm::vec3(0.f, 0.0f, 0.f), 
@@ -235,11 +236,6 @@ int main()
 		glm::vec3(1.f, 1.f, 1.f)
 	);
 
-	std::cout << light->getAmbient().x << std::endl;
-	std::cout << light->getDiffuse().x << std::endl;
-	std::cout << light->getSpecular().x << std::endl;
-	std::cout << light->getDirection().x << std::endl;
-
 	unsigned int VBO;
 	glGenBuffers(1, &VBO);
 
@@ -341,7 +337,7 @@ int main()
 		glBindVertexArray(lightVAO);
 		shader->useProgram();
 		model = glm::mat4(1.f);
-		//lightTransform->setPosition(glm::vec3(sin(glfwGetTime() * 5) * 10, lightTransform->getPosition().y, cos(glfwGetTime() * 5) * 10));
+		lightTransform->setPosition(glm::vec3(sin(glfwGetTime() * 5) * 10, lightTransform->getPosition().y, cos(glfwGetTime() * 5) * 10));
 		model = glm::translate(model, lightTransform->getPosition());
 		model = glm::scale(model, lightTransform->getScale());
 		shader->setVec3("color", light->getAmbient());
@@ -349,6 +345,9 @@ int main()
 		shader->setFloatMat4("v1", view);
 		shader->setFloatMat4("m1", model);
 		//glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		shader->useProgram();
+		ball->Draw(*shader);
 
 		glfwSetWindowSizeCallback(window, onResize);
 		glfwSetCursorPosCallback(window, onMouse);

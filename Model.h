@@ -16,8 +16,8 @@ private:
 	// model data
 	vector<Mesh> meshes;
 	string directory;
-	aiScene* scene;
+	const aiScene* scene;
 	void loadModel(string path);
 	void extractMeshData();
-	void renderMesh();
+	void renderMeshes();
 };
