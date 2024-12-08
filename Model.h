@@ -19,5 +19,5 @@ private:
 	const aiScene* scene;
 	void loadModel(string path);
 	void extractMeshData();
-	void renderMeshes();
+	const char* getTexturePath(aiMesh* mesh);
 };

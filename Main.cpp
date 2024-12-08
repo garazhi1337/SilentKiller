@@ -127,7 +127,7 @@ int main()
 	materialShader->setInt("material.specularMap", 1);
 
 	//Transform* cubeTransform = new Transform(glm::vec3(0.f, -1.f, 0.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(1.f, 1.f, 1.f));
-	Model* ball = new Model("models/test.obj");
+	Model* ball = new Model("models\\chair.obj");
 
 	Transform* lightTransform = new Transform(
 		glm::vec3(0.f, 0.0f, 0.f), 
@@ -135,67 +135,6 @@ int main()
 		glm::vec3(0.1f, 0.1f, 0.1f), 
 		glm::vec3(0.f, 0.f, 0.f)
 	);
-
-	unsigned int texture1;
-	glGenTextures(1, &texture1);
-	glBindTexture(GL_TEXTURE_2D, texture1);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-	int width, height, channels;
-	unsigned char* data1 = stbi_load("images\\container.png", &width, &height, &channels, 0);
-	stbi_set_flip_vertically_on_load(true);
-	//std::cout << *data << std::endl;
-	if (data1)
-	{
-		//сделать в классе шейдер в униформу текстуры потом
-		if (channels == 3)
-		{
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data1);
-		}
-		else
-		{
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data1);
-		}
-	}
-	else
-	{
-		std::cout << "Failed to load texture *quq quq*" << std::endl;
-	}
-
-	unsigned int texture2;
-	glGenTextures(1, &texture2);
-	glBindTexture(GL_TEXTURE_2D, texture2);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-	unsigned char* data2 = stbi_load("images\\steelpart.png", &width, &height, &channels, 0);
-	//std::cout << *data << std::endl;
-	if (data2)
-	{
-		if (channels == 3)
-		{
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data2);
-		}
-		else
-		{
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data2);
-		}
-	}
-	else
-	{
-		std::cout << "Failed to load texture *quq quq*" << std::endl;
-	}
-
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, texture1);
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, texture2);
-
-	stbi_image_free(data1);
-	stbi_image_free(data2);
 
 	playerCamera = new Camera(glm::vec3(0.f, 0.f, -3.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f), window, WIDTH, HEIGHT);
 
@@ -220,55 +159,12 @@ int main()
 		0.25f
 	);
 
-	/*	
-	Light* light = new Light(
-	glm::vec3(0.f, 0.f, 0.f),
-	glm::vec3(1.f, 1.f, 1.f),
-	glm::vec3(1.f, 1.f, 1.f),
-	glm::vec3(1.f, 1.f, 1.f)
-	);
-	*/
-
 	DirectionalLight* light = new DirectionalLight(
 		glm::vec3(-1.f, -1.f, -3.f),
 		glm::vec3(1.f, 1.f, 1.f),
 		glm::vec3(1.f, 1.f, 1.f),
 		glm::vec3(1.f, 1.f, 1.f)
 	);
-
-	unsigned int VBO;
-	glGenBuffers(1, &VBO);
-
-	unsigned int VAO;
-	glGenVertexArrays(1, &VAO);
-
-	glBindVertexArray(VAO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * rows * (3 + 3 + 2), vertices, GL_STATIC_DRAW);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 8, (void*)0);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 8, (void*)(3 * sizeof(float)));
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 8, (void*)(6 * sizeof(float)));
-	glEnableVertexAttribArray(2);
-	
-
-	unsigned int lightVBO;
-	glGenBuffers(1, &lightVBO);
-
-	unsigned int lightVAO;
-	glGenVertexArrays(1, &lightVAO);
-
-	glBindVertexArray(lightVAO);
-	glBindBuffer(GL_ARRAY_BUFFER, lightVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(float)* rows* (3 + 3 + 2), vertices, GL_STATIC_DRAW);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 8, (void*)0);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 8, (void*)(3 * sizeof(float)));
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 8, (void*)(6 * sizeof(float)));
-	glEnableVertexAttribArray(2);
-
 
 
 	while (!glfwWindowShouldClose(window))
@@ -278,75 +174,15 @@ int main()
 		glClear(GL_DEPTH_BUFFER_BIT);
 		processInput(window);
 
-		//создание видовой матрицы
-		glm::mat4 view = glm::mat4(1.f);
-		//создание видовой матрицы
+		shader->useProgram();
+		glm::mat4 model = glm::mat4(1.0f);
+		glm::mat4 view = glm::mat4(1.0f);
 		view = playerCamera->rotate();
-		playerCamera->move(window);
-		//создание перспективного вида
-		glm::mat4 projection = glm::mat4(1.f);
-		projection = glm::perspective(glm::radians(45.0f), WIDTH/HEIGHT, 0.01f, 100.0f);
-
-		//тут будут осуществляться все действия с освещаемым объектом
-		glBindVertexArray(VAO);
-		materialShader->useProgram();
-		glm::mat4 model = glm::mat4(1.f);
-		//model = glm::translate(model, cubeTransform->getPosition());
-		//model = glm::scale(model, cubeTransform->getScale());
-		//model = glm::rotate(model, -(float)glfwGetTime() * 0.5f, glm::vec3(0.f, 0.f, 1.f));
-
-		materialShader->setVec3("cameraPos", playerCamera->getPos());
-
-		materialShader->setVec3("material.ambient", standard->getAmbient());
-		materialShader->setVec3("material.diffuse", standard->getDiffuse());
-		materialShader->setVec3("material.specular", standard->getSpecular());
-		materialShader->setFloat("material.shininess", standard->getShininess());
-
-		materialShader->setVec3("light.ambient", light->getAmbient());
-		materialShader->setVec3("light.diffuse", light->getDiffuse());
-		materialShader->setVec3("light.specular", light->getSpecular());
-		materialShader->setVec3("light.direction", light->getDirection());
-		materialShader->setVec3("light.position", playerCamera->getPos());
-		materialShader->setFloat("light.constant", 1.f);
-		materialShader->setFloat("light.linear", 0.065f);
-		materialShader->setFloat("light.quadratic", 0.01f);
-		materialShader->setFloat("light.outerRadius", glm::radians(17.5f));
-		materialShader->setFloat("light.innerRadius", glm::radians(12.5f));
-		materialShader->setVec3("light.spotlightDir", glm::vec3(0.f, 0.f, 1.f));
-		materialShader->setVec3("light.cameraDir", playerCamera->getFront() - glm::vec3(0.f, 0.12f, 0.f));
-		materialShader->setInt("light.mode", 3);
-
-		for (auto box : boxes)
-		{
-			model = glm::mat4(1.f);
-			model = glm::translate(model, box->getPosition());
-			model = glm::scale(model, box->getScale());
-			model = glm::rotate(model, glm::radians(box->getAngles().x), glm::vec3(1.f, 0.f, 0.f));
-			model = glm::rotate(model, glm::radians(box->getAngles().y), glm::vec3(0.f, 1.f, 0.f));
-			model = glm::rotate(model, glm::radians(box->getAngles().z), glm::vec3(1.f, 0.f, 1.f));
-			materialShader->setFloatMat4("m", model);
-			materialShader->setFloatMat4("p", projection);
-			materialShader->setFloatMat4("v", view);
-			glDrawArrays(GL_TRIANGLES, 0, 36);
-		}
-
-		materialShader->setFloatMat4("p", projection);
-		materialShader->setFloatMat4("v", view);
-
-		//тут будут осуществляться все действия с источником света
-		glBindVertexArray(lightVAO);
-		shader->useProgram();
-		model = glm::mat4(1.f);
-		lightTransform->setPosition(glm::vec3(sin(glfwGetTime() * 5) * 10, lightTransform->getPosition().y, cos(glfwGetTime() * 5) * 10));
-		model = glm::translate(model, lightTransform->getPosition());
-		model = glm::scale(model, lightTransform->getScale());
-		shader->setVec3("color", light->getAmbient());
-		shader->setFloatMat4("p1", projection);
-		shader->setFloatMat4("v1", view);
-		shader->setFloatMat4("m1", model);
-		//glDrawArrays(GL_TRIANGLES, 0, 36);
-
-		shader->useProgram();
+		glm::mat4 projection = glm::mat4(1.0f);
+		projection = glm::perspective(45.0f, (float)WIDTH/HEIGHT, 0.1f, 100.0f);
+		shader->setFloatMat4("m", model);
+		shader->setFloatMat4("v", view);
+		shader->setFloatMat4("p", projection);
 		ball->Draw(*shader);
 
 		glfwSetWindowSizeCallback(window, onResize);
@@ -365,12 +201,12 @@ void onResize(GLFWwindow* window, int width, int height)
 	glViewport(0, 0, width, height);
 }
 void onMouse(GLFWwindow* window, double posx, double posy)
-
 {
 	playerCamera->onMouse(window, posx, posy);
 }
 void processInput(GLFWwindow* window)
 {
+	playerCamera->move(window);
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
 }
