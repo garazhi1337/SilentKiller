@@ -11,7 +11,7 @@ class Model
 {
 public:
 	Model(string path);
-	void Draw(Shader& shader);
+	void Draw(Shader* shader);
 private:
 	// model data
 	vector<Mesh> meshes;

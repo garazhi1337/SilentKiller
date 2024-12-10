@@ -1,4 +1,4 @@
-#include <iostream>
+﻿#include <iostream>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
@@ -57,10 +57,62 @@ int main()
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
 
+	Shader* shader = new Shader("vert.glsl", "frag.glsl");
+	shader->useProgram();
+
+	//Transform* cubeTransform = new Transform(glm::vec3(0.f, -1.f, 0.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(1.f, 1.f, 1.f));
+	Model* ball = new Model("models\\chair.obj");
+
+	playerCamera = new Camera(glm::vec3(0.f, 0.f, -3.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f), window, WIDTH, HEIGHT);
+
+	/*	int width, height, channels;
+	unsigned char* data = stbi_load("models/textures/ornament.png", &width, &height, &channels, 0);
+	unsigned int textureId;
+	//glGenTextures(1, &textureId);
+	shader->setInt("texture_diffuse1", 5);
+	glActiveTexture(GL_TEXTURE5);
+	glBindTexture(GL_TEXTURE_2D, 4);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);  // Повторение по оси S
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);  // Повторение по оси T
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); // Фильтрация при уменьшении
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST); // Фильтрация при увеличении
+
+	if (data)
+	{
+
+		switch (channels)
+		{
+
+		case 3:
+			glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+			//cout << channels << width << height << str << endl;
+			break;
+		case 4:
+
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+			//cout << channels << width << height << str << endl;
+			break;
+		}
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+		//glBindTexture(GL_TEXTURE_2D, 0);
+		stbi_image_free(data);
+	}
+	else
+	{
+		std::cout << "Failed to load texture *quq quq*: " << stbi_failure_reason() << std::endl;
+		stbi_image_free(data);
+	}
+	glActiveTexture(GL_TEXTURE0);
+	*/
+
+	
+
+
+
 	const int rows = 36;
 
 	float vertices[rows * (3 + 3 + 2)] = {
-		// ���������� ������	// �������				// �����. �������
 		-0.5f, -0.5f, -0.5f,	0.0f, 0.0f, -1.0f,		0.0f, 0.0f,
 		 0.5f, -0.5f, -0.5f,	0.0f, 0.0f, -1.0f,		1.0f, 0.0f,
 		 0.5f, 0.5f, -0.5f,		0.0f, 0.0f, -1.0f,		1.0f, 1.0f,
@@ -104,86 +156,50 @@ int main()
 		-0.5f, 0.5f, -0.5f,		0.0f, 1.0f, 0.0f,		0.0f, 1.0f
 	};
 
-	std::srand(std::time(nullptr));
-	std::vector<Transform*> boxes;
-	for (int i = 0; i < 1000; i++)
-	{
-		float size = randFloat(0.3f, 1.1f);
-		glm::vec3 rotation = glm::vec3(randFloat(0.f, 360.f), randFloat(0.f, 360.f), randFloat(0.f, 360.f));
-		Transform* cubeTransform = new Transform(
-			glm::vec3(randSphericPosition(0.f, 0.f, 0.f, 5.f, 10.f)),
-			glm::vec3(1.f, 1.f, 1.f),
-			glm::vec3(1.f, 1.f, 1.f) * size,
-			rotation
-		);
-		boxes.push_back(cubeTransform);
-	}
+	uint32_t VBO, VAO;
+	glGenVertexArrays(1, &VAO);
+	glGenBuffers(1, &VBO);
+	glBindVertexArray(VAO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER, rows * (3+3+2) * sizeof(float), vertices, GL_STATIC_DRAW);
 
-	Shader* shader = new Shader("vert.glsl", "frag.glsl");
-	Shader* materialShader = new Shader("materialVert.glsl", "materialFrag.glsl");
-	shader->useProgram();
-	materialShader->useProgram();
-	materialShader->setInt("material.diffuseMap", 0);
-	materialShader->setInt("material.specularMap", 1);
+	// vertex positions
 
-	//Transform* cubeTransform = new Transform(glm::vec3(0.f, -1.f, 0.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(1.f, 1.f, 1.f));
-	Model* ball = new Model("models\\chair.obj");
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 8, (void*) (sizeof(float) * 0));
+	glEnableVertexAttribArray(0);
+	// vertex normals
 
-	Transform* lightTransform = new Transform(
-		glm::vec3(0.f, 0.0f, 0.f), 
-		glm::vec3(0.f, 0.f, 0.f), 
-		glm::vec3(0.1f, 0.1f, 0.1f), 
-		glm::vec3(0.f, 0.f, 0.f)
-	);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 8, (void*) (sizeof(float) * 3));
+	glEnableVertexAttribArray(1);
+	// vertex texture coords
 
-	playerCamera = new Camera(glm::vec3(0.f, 0.f, -3.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f), window, WIDTH, HEIGHT);
-
-	Material* emerald = new Material(
-		glm::vec3(0.0215f, 0.1745f, 0.0215f), 
-		glm::vec3(0.07568f, 0.61424f, 0.07568f), 
-		glm::vec3(0.633f, 0.727811f, 0.633f), 
-		0.6f
-	);
-
-	Material* brass = new Material(
-		glm::vec3(0.329412f, 0.223529f,	0.027451f),
-		glm::vec3(0.780392f, 0.568627f,	0.113725f),
-		glm::vec3(0.992157f, 0.941176f, 0.807843f),
-		0.21794872f
-	);
-
-	Material* standard = new Material(
-		glm::vec3(0.2f, 0.2f, 0.2f),
-		glm::vec3(0.5f, 0.5f, 0.5f),
-		glm::vec3(1.f, 1.f, 1.f),
-		0.25f
-	);
-
-	DirectionalLight* light = new DirectionalLight(
-		glm::vec3(-1.f, -1.f, -3.f),
-		glm::vec3(1.f, 1.f, 1.f),
-		glm::vec3(1.f, 1.f, 1.f),
-		glm::vec3(1.f, 1.f, 1.f)
-	);
-
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 8, (void*) (sizeof(float) * 6));
+	glEnableVertexAttribArray(2);
+	glBindVertexArray(0);
 
 	while (!glfwWindowShouldClose(window))
 	{
 		glClearColor(0.0f, 0.075f, 0.15f, 1.f);
 		glClear(GL_COLOR_BUFFER_BIT);
+		//glClearDepth(1.0f);
 		glClear(GL_DEPTH_BUFFER_BIT);
 		processInput(window);
 
 		shader->useProgram();
+		//glBindTexture(GL_TEXTURE_2D, 5);
+		//glBindVertexArray(VAO);
 		glm::mat4 model = glm::mat4(1.0f);
 		glm::mat4 view = glm::mat4(1.0f);
 		view = playerCamera->rotate();
 		glm::mat4 projection = glm::mat4(1.0f);
-		projection = glm::perspective(45.0f, (float)WIDTH/HEIGHT, 0.1f, 100.0f);
+		projection = glm::perspective(45.0f, WIDTH/HEIGHT, 0.1f, 100.0f);
+		
 		shader->setFloatMat4("m", model);
 		shader->setFloatMat4("v", view);
 		shader->setFloatMat4("p", projection);
-		ball->Draw(*shader);
+		ball->Draw(shader);
+
+		//glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		glfwSetWindowSizeCallback(window, onResize);
 		glfwSetCursorPosCallback(window, onMouse);

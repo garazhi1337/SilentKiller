@@ -13,30 +13,36 @@ Mesh::Mesh()
 
 }
 
-void Mesh::Draw(Shader& shader)
+void Mesh::Draw(Shader* shader)
 {
 	uint32_t diffuseNr = 1;
 	uint32_t specularNr = 1;
+	//shader->useProgram();
+
+
+
 	for (uint32_t i = 0; i < textures.size(); i++)
 	{
-		glActiveTexture(GL_TEXTURE0 + i);
-		//в текстуре есть ее ид и тип
 		string number;
 		string name = textures[i].type;
-		if (name == "texture_diffuse")
+		if (name == "texture_diffuse") 
+		{
 			number = std::to_string(diffuseNr++);
+		}
 		else if (name == "texture_specular")
+		{
 			number = std::to_string(specularNr++);
-		shader.setFloat((name + number).c_str(), i);
+		}
+		
+		shader->setInt(name + number, i);
+		glActiveTexture(GL_TEXTURE0 + i);
 		glBindTexture(GL_TEXTURE_2D, textures[i].id);
+		cout << i << endl;
 	}
-	glActiveTexture(GL_TEXTURE0);
-	// draw mesh
+
 	glBindVertexArray(VAO);
 	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
-
 	glBindVertexArray(0);
-
 }
 
 void Mesh::setupMesh()
@@ -50,14 +56,17 @@ void Mesh::setupMesh()
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 
 	// vertex positions
-	glEnableVertexAttribArray(0);
+
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
+	glEnableVertexAttribArray(0);
 	// vertex normals
-	glEnableVertexAttribArray(1);
+
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal));
+	glEnableVertexAttribArray(1);
 	// vertex texture coords
-	glEnableVertexAttribArray(2);
+
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texCoords));
+	glEnableVertexAttribArray(2);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(uint32_t), &indices[0], GL_STATIC_DRAW);
 	glBindVertexArray(0);
 }

@@ -127,5 +127,13 @@ void Shader::setFloat(std::string uniformPath, float num)
 
 void Shader::setInt(std::string uniformPath, int num)
 {
-	glUniform1i(glGetUniformLocation(program, uniformPath.c_str()), num);
+	GLint location = glGetUniformLocation(program, uniformPath.c_str());
+	if (location != -1) {
+		glUniform1i(glGetUniformLocation(program, uniformPath.c_str()), num);
+		//std::cout << "Uniform '" << uniformPath << "' set to: " << num << std::endl;
+	}
+	else {
+		std::cerr << "Error: uniform '" << uniformPath << "' not found!" << std::endl;
+	}
+
 }

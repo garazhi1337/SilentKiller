@@ -8,7 +8,10 @@ uniform mat4 m;
 uniform mat4 v;
 uniform mat4 p;
 
+out vec2 textureCoords;
+
 void main()
 {
 	gl_Position = p * v * m * vec4(aPos1, 1.0f);
+	textureCoords = textCoords1;
 }

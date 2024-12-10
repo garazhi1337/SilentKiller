@@ -7,7 +7,7 @@ Model::Model(string path)
 
 }
 
-void Model::Draw(Shader& shader)
+void Model::Draw(Shader* shader)
 {
     for (uint32_t i = 0; i < meshes.size(); i++)
     {
@@ -48,6 +48,7 @@ void Model::extractMeshData()
             glm::vec3 glmPos = glm::vec3(position.x, position.y, position.z);
             glm::vec3 glmNorm = glm::vec3(normal.x, normal.y, normal.z);
             glm::vec2 glmTex = glm::vec2(texCoord.x, texCoord.y);
+            //cout << texCoord.x << " " << texCoord.y << endl;
             // Добавление данных в вашу структуру myMesh
             Vertex vert = { glmPos, glmNorm, glmTex };
             tmpMesh.vertices.push_back(vert);
@@ -79,22 +80,26 @@ void Model::extractMeshData()
 
         unsigned char* data = stbi_load(str, &width, &height, &channels, 0);
 
-        if (data != nullptr)
+        if (data)
         {
-            glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
             switch (channels)
             {
                 glBindTexture(GL_TEXTURE_2D, textureId);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);  // Повторение по оси S
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);  // Повторение по оси T
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); // Фильтрация при уменьшении
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // Фильтрация при увеличении
                 case 3:
+                    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
                     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
                     //cout << channels << width << height << str << endl;
                     break;
                 case 4:
-
-                    //glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+                    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
                     //cout << channels << width << height << str << endl;
                     break;
             }
+            glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
             glBindTexture(GL_TEXTURE_2D, 0);
             stbi_image_free(data);
         }
@@ -111,20 +116,3 @@ void Model::extractMeshData()
         meshes.push_back(myMesh);
 	}
 }
-
-const char* Model::getTexturePath(aiMesh* mesh)
-{
-    aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-    aiString path; // Переменная для хранения пути к текстуре
-    aiString rel;
-    rel.Set("models\\textures\\");
-    //std::cout << (material->GetName()).C_Str() << "\n";
-    
-    // Получаем текстуру типа DIFFUSE (можно взять другие типы)
-    if (material->GetTexture(aiTextureType_DIFFUSE, 0, &path) == aiReturn_SUCCESS) {
-        // записывает в path путь до текстуры (само название текстуры для того чтобы потом его в стбиимаждолере загрузить)
-        rel.Append(path.C_Str());
-    }
-    return rel.C_Str();
-}
-
