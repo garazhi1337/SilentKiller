@@ -1,10 +1,12 @@
 #include "Model.h"
 #include "Libraries/include/stb_image.h"
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
 
-Model::Model(string path)
+Model::Model(string path, GLFWwindow* window)
 {
 	loadModel(path);
-
+    glfwMakeContextCurrent(window);
 }
 
 void Model::Draw(Shader* shader)
@@ -33,8 +35,6 @@ void Model::loadModel(string path)
 
 void Model::extractMeshData()
 {
-
-
 	for (uint32_t i = 0; i < scene->mNumMeshes; i++)
 	{
 		aiMesh* mesh = scene->mMeshes[i];
@@ -76,19 +76,19 @@ void Model::extractMeshData()
             rel.Append(path.C_Str());
         }
         const char* str = rel.C_Str();
-        cout << str << endl;
+        cout << str << " " << textureId << endl;
 
         unsigned char* data = stbi_load(str, &width, &height, &channels, 0);
 
         if (data)
         {
+            glBindTexture(GL_TEXTURE_2D, textureId);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);  // Повторение по оси S
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);  // Повторение по оси T
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); // Фильтрация при уменьшении
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // Фильтрация при увеличении
             switch (channels)
             {
-                glBindTexture(GL_TEXTURE_2D, textureId);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);  // Повторение по оси S
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);  // Повторение по оси T
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); // Фильтрация при уменьшении
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // Фильтрация при увеличении
                 case 3:
                     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
                     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
@@ -100,7 +100,7 @@ void Model::extractMeshData()
                     break;
             }
             glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
-            glBindTexture(GL_TEXTURE_2D, 0);
+            //glBindTexture(GL_TEXTURE_2D, 0);
             stbi_image_free(data);
         }
         else
@@ -108,7 +108,8 @@ void Model::extractMeshData()
             std::cout << "Failed to load texture *quq quq*: " << stbi_failure_reason() << std::endl;
         }
 
-        Texture texture = {textureId, "texture_diffuse"};
+        string name = "texture_diffuse";
+        Texture texture = {textureId, name};
         //cout << texture.id << " " << texture.type << endl;
         tmpMesh.textures.push_back(texture);
 

@@ -17,15 +17,12 @@ void Mesh::Draw(Shader* shader)
 {
 	uint32_t diffuseNr = 1;
 	uint32_t specularNr = 1;
-	//shader->useProgram();
-
-
 
 	for (uint32_t i = 0; i < textures.size(); i++)
 	{
 		string number;
 		string name = textures[i].type;
-		if (name == "texture_diffuse") 
+		if (name == "texture_diffuse")
 		{
 			number = std::to_string(diffuseNr++);
 		}
@@ -34,12 +31,12 @@ void Mesh::Draw(Shader* shader)
 			number = std::to_string(specularNr++);
 		}
 		
-		shader->setInt(name + number, i);
+		shader->setInt((name + number).c_str(), i);
 		glActiveTexture(GL_TEXTURE0 + i);
 		glBindTexture(GL_TEXTURE_2D, textures[i].id);
-		cout << i << endl;
 	}
 
+	glActiveTexture(GL_TEXTURE0);
 	glBindVertexArray(VAO);
 	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);

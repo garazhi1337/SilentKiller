@@ -61,17 +61,16 @@ int main()
 	shader->useProgram();
 
 	//Transform* cubeTransform = new Transform(glm::vec3(0.f, -1.f, 0.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(1.f, 1.f, 1.f));
-	Model* ball = new Model("models\\chair.obj");
+	Model* ball = new Model("models\\chair.obj", window);
 
 	playerCamera = new Camera(glm::vec3(0.f, 0.f, -3.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f), window, WIDTH, HEIGHT);
 
-	/*	int width, height, channels;
+	int width, height, channels;
 	unsigned char* data = stbi_load("models/textures/ornament.png", &width, &height, &channels, 0);
 	unsigned int textureId;
-	//glGenTextures(1, &textureId);
-	shader->setInt("texture_diffuse1", 5);
-	glActiveTexture(GL_TEXTURE5);
-	glBindTexture(GL_TEXTURE_2D, 4);
+	glGenTextures(1, &textureId);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, textureId);
 	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);  // Повторение по оси S
 	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);  // Повторение по оси T
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); // Фильтрация при уменьшении
@@ -104,11 +103,43 @@ int main()
 		stbi_image_free(data);
 	}
 	glActiveTexture(GL_TEXTURE0);
-	*/
 
-	
+	unsigned char* data1 = stbi_load("models/textures/wood.png", &width, &height, &channels, 0);
+	unsigned int textureId1;
+	glGenTextures(1, &textureId1);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, textureId1);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);  // Повторение по оси S
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);  // Повторение по оси T
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); // Фильтрация при уменьшении
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST); // Фильтрация при увеличении
 
+	if (data1)
+	{
+		switch (channels)
+		{
 
+		case 3:
+			glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data1);
+			//cout << channels << width << height << str << endl;
+			break;
+		case 4:
+
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data1);
+			//cout << channels << width << height << str << endl;
+			break;
+		}
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+		//glBindTexture(GL_TEXTURE_2D, 0);
+		stbi_image_free(data1);
+	}
+	else
+	{
+		std::cout << "Failed to load texture *quq quq*: " << stbi_failure_reason() << std::endl;
+		stbi_image_free(data1);
+	}
+	glActiveTexture(GL_TEXTURE0);
 
 	const int rows = 36;
 
@@ -180,13 +211,12 @@ int main()
 	while (!glfwWindowShouldClose(window))
 	{
 		glClearColor(0.0f, 0.075f, 0.15f, 1.f);
-		glClear(GL_COLOR_BUFFER_BIT);
-		//glClearDepth(1.0f);
-		glClear(GL_DEPTH_BUFFER_BIT);
+		glClearDepth(1.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		processInput(window);
 
 		shader->useProgram();
-		//glBindTexture(GL_TEXTURE_2D, 5);
+
 		//glBindVertexArray(VAO);
 		glm::mat4 model = glm::mat4(1.0f);
 		glm::mat4 view = glm::mat4(1.0f);
@@ -198,8 +228,6 @@ int main()
 		shader->setFloatMat4("v", view);
 		shader->setFloatMat4("p", projection);
 		ball->Draw(shader);
-
-		//glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		glfwSetWindowSizeCallback(window, onResize);
 		glfwSetCursorPosCallback(window, onMouse);

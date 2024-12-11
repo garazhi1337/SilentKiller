@@ -29,8 +29,9 @@ public:
 	Mesh(vector<Vertex> vertices, vector<uint32_t> indices, vector<Texture> textures);
 	Mesh();
 	void Draw(Shader* shader);
+	uint32_t VAO, VBO, EBO;
 private:
 	// render data
-	uint32_t VAO, VBO, EBO;
+
 	void setupMesh();
 };

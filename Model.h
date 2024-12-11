@@ -10,11 +10,12 @@
 class Model
 {
 public:
-	Model(string path);
+	Model(string path, GLFWwindow* window);
 	void Draw(Shader* shader);
+	vector<Mesh> meshes;
 private:
 	// model data
-	vector<Mesh> meshes;
+
 	string directory;
 	const aiScene* scene;
 	void loadModel(string path);
