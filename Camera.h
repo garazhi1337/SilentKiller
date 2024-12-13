@@ -11,7 +11,7 @@ class Camera
 {
 public:
 	void onMouse(GLFWwindow* window, double posx, double posy);
-	Camera(glm::vec3 cameraPos, glm::vec3 cameraFront, glm::vec3 cameraUp, GLFWwindow* window, float width, float heigth);
+	Camera(glm::vec3 cameraPos, glm::vec3 cameraFront, glm::vec3 cameraUp, GLFWwindow* window, float width, float heigth, float speed);
 	~Camera();
 	void setPos(glm::vec3 cameraPos);
 	void setFront(glm::vec3 cameraFront);
@@ -21,6 +21,8 @@ public:
 	glm::vec3 getUp();
 	glm::mat4 rotate();
 	void move(GLFWwindow* window);
+	void setSpeed(float speed);
+	float getSpeed();
 
 private:
 	glm::vec3 cameraPos;
@@ -33,6 +35,8 @@ private:
 	float width, height;
 	float lastX;
 	float lastY;
+	float speed;
+	bool isShiftPressed = false;
 	bool firstMouse = true;
 };
 

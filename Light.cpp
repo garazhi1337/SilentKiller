@@ -1,57 +1,67 @@
-#include <glm/glm.hpp>
+#pragma once
+
+#define DIRECTIONAL 1
+#define PROJECTOR 2
+#define POINT 3
+
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include "Light.h"
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+#include "Shader.h"
 
 
-void Light::setPosition(glm::vec3 position)
+class Light
 {
-	this->position = position;
-}
+private:
+	glm::vec3 dirLightPos;
+	glm::vec3 pointLightPos;
+	glm::vec3 projectorLightPos;
+	Shader* shader;
+	int mode;
+public:
+	Light(Shader* shader)
+	{
+		this->shader = shader;
+		setLightMode(DIRECTIONAL);
+	}
 
-glm::vec3 Light::getPosition()
-{
-	return position;
-}
+	~Light()
+	{
+		delete this;
+	}
 
-void Light::setAmbient(glm::vec3 ambient)
-{
-	this->ambient = ambient;
-}
+	void setDirLightPos(glm::vec3 dirLightPos)
+	{
+		this->dirLightPos = dirLightPos;
+		shader->setVec3("dirLightPos", dirLightPos);
+	}
 
-glm::vec3 Light::getAmbient()
-{
-	return ambient;
-}
+	void setPointLightPos(glm::vec3 pointLightPos)
+	{
+		this->pointLightPos = pointLightPos;
+		shader->setVec3("pointLightPos", pointLightPos);
+	}
 
-void Light::setDiffuse(glm::vec3 diffuse)
-{
-	this->diffuse = diffuse;
-}
+	void setProjectorLightPos(glm::vec3 projectorLightPos)
+	{
+		this->projectorLightPos = projectorLightPos;
+		shader->setVec3("projectorLightPos", projectorLightPos);
+	}
 
-glm::vec3 Light::getDiffuse()
-{
-	return diffuse;
-}
+	void setLightMode(int mode)
+	{
+		this->mode = mode;
+		shader->setInt("lightMode", mode);
+	}
 
-void Light::setSpecular(glm::vec3 specular)
-{
-	this->specular = specular;
-}
-
-glm::vec3 Light::getSpecular()
-{
-	return specular;
-}
-
-Light::Light(glm::vec3 position, glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular)
-{
-	this->position = position;
-	this->ambient = ambient;
-	this->diffuse = diffuse;
-	this->specular = specular;
-}
-
-Light::Light()
-{
-}
+	void changeLightMode(GLFWwindow* window)
+	{
+		if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
+			setLightMode(DIRECTIONAL);
+		if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
+			setLightMode(PROJECTOR);
+		if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
+			setLightMode(POINT);
+	}
+};

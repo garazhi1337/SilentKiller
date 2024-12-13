@@ -25,13 +25,14 @@ void Camera::onMouse(GLFWwindow* window, double xpos, double ypos)
 		pitch = -89.0f;
 }
 
-Camera::Camera(glm::vec3 cameraPos, glm::vec3 cameraFront, glm::vec3 cameraUp, GLFWwindow* window, float width, float height)
+Camera::Camera(glm::vec3 cameraPos, glm::vec3 cameraFront, glm::vec3 cameraUp, GLFWwindow* window, float width, float height, float speed)
 {
 	this->cameraPos = cameraPos;
 	this->cameraFront = cameraFront;
 	this->cameraUp = cameraUp;
 	this->width = width;
 	this->height = height;
+	this->speed = speed;
 	lastX = width / 2.f;
 	lastY = height / 2.f;
 
@@ -91,13 +92,43 @@ void Camera::move(GLFWwindow* window)
 	lastFrame = currentFrame;
 	//std::cout << "FPS: " << 1.f / deltaTime << std::endl;
 
-	const float cameraSpeed = 2.5f * deltaTime;
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-		cameraPos += cameraSpeed * cameraFront;
+		cameraPos += speed * cameraFront * deltaTime;
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-		cameraPos -= cameraSpeed * cameraFront;
+		cameraPos -= speed * cameraFront * deltaTime;
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-		cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+		cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * speed * deltaTime;
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-		cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+		cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * speed * deltaTime;
+	if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+	{
+		if (!isShiftPressed)
+		{
+			isShiftPressed = true;
+			std::cout << "shift press" << std::endl;
+			speed *= 3.0f;
+		}
+
+	}
+
+	if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE)
+	{
+		if (isShiftPressed)
+		{
+			isShiftPressed = false;
+			std::cout << "shift release" << std::endl;
+			speed /= 3.0f;
+		}
+
+	}
+}
+
+void Camera::setSpeed(float speed)
+{
+	this->speed = speed;
+}
+
+float Camera::getSpeed()
+{
+	return this->speed;
 }
