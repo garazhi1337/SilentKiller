@@ -216,6 +216,7 @@ int main()
 		processInput(window);
 
 		shader->useProgram();
+		shader->setVec3("eyePos", playerCamera->getPos());
 
 		//glBindVertexArray(VAO);
 		glm::mat4 model = glm::mat4(1.0f);
