@@ -36,7 +36,7 @@ void main()
 	}
 	else if (lightMode == PROJECTOR)
 	{
-
+		
 	}
 	else
 	{

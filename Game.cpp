@@ -1,18 +1,34 @@
+#define DIRECTIONAL 1
+#define PROJECTOR 2
+#define POINT 3
+
 #include "Game.h"
+#include "Light.cpp"
 
-
-int Game::run()
+Game::Game()
 {
-	std::srand(std::time(nullptr));
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-	GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "SilentKiller", NULL, NULL);
+	window = glfwCreateWindow(WIDTH, HEIGHT, "SilentKiller", NULL, NULL);
 	glfwMakeContextCurrent(window);
 
-	if (window == NULL)
+	glfwSetWindowUserPointer(window, reinterpret_cast<void*>(this));
+
+	playerCamera = new Camera(glm::vec3(0.f, 0.f, -3.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f), window, WIDTH, HEIGHT, 10.0f);
+}
+
+Game::~Game()
+{
+	delete this;
+}
+
+int Game::run()
+{
+	std::srand(std::time(nullptr));
+
+	if (window == nullptr)
 	{
 		std::cout << "Failed to open GLFW window *quq quq*" << std::endl;
 		glfwTerminate();
@@ -32,10 +48,10 @@ int Game::run()
 	Shader* shader = new Shader("vert.glsl", "frag.glsl");
 	shader->useProgram();
 
-	//Transform* cubeTransform = new Transform(glm::vec3(0.f, -1.f, 0.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(1.f, 1.f, 1.f));
-	Model* ball = new Model("models\\chair.obj", window);
-
-	playerCamera = new Camera(glm::vec3(0.f, 0.f, -3.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f), window, WIDTH, HEIGHT);
+	Model* ball = new Model("models\\shooting_range.obj");
+	Light* light = new Light(shader);
+	light->setLightMode(DIRECTIONAL);
+	light->setDirLightPos(glm::vec3(- 1.0f, -1.0f, -1.0f));
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -59,8 +75,8 @@ int Game::run()
 		shader->setFloatMat4("p", projection);
 		ball->Draw(shader);
 
-		//glfwSetWindowSizeCallback(window, onResize);
-		//glfwSetCursorPosCallback(window, onMouse);
+		glfwSetWindowSizeCallback(window, handleOnResize);
+		glfwSetCursorPosCallback(window, handleOnMouse);
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
@@ -107,4 +123,15 @@ glm::vec3 Game::randSphericPosition(float x0, float y0, float z0, float minRadiu
 		checkRadius = (float)sqrt(pow(x, 2) + pow(y, 2) + pow(z, 2));
 	}
 	return glm::vec3(x + x0, y + y0, z + z0);
+}
+
+static void handleOnResize(GLFWwindow* _window, int width, int height)
+{
+	cout << "kittens" << endl;
+	reinterpret_cast<Game*>(glfwGetWindowUserPointer(_window))->onResize(_window, width, height);
+}
+
+static void handleOnMouse(GLFWwindow* _window, double xpos, double ypos)
+{
+	reinterpret_cast<Game*>(glfwGetWindowUserPointer(_window))->onMouse(_window, xpos, ypos);
 }

@@ -10,7 +10,7 @@
 class Model
 {
 public:
-	Model(string path, GLFWwindow* window);
+	Model(string path);
 	void Draw(Shader* shader);
 	vector<Mesh> meshes;
 private:

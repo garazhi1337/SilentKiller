@@ -1,12 +1,12 @@
-#include "Model.h"
-#include "Libraries/include/stb_image.h"
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#define STB_IMAGE_IMPLEMENTATION
+#include "Libraries/include/stb_image.h"
+#include "Model.h"
 
-Model::Model(string path, GLFWwindow* window)
+Model::Model(string path)
 {
 	loadModel(path);
-    glfwMakeContextCurrent(window);
 }
 
 void Model::Draw(Shader* shader)
@@ -82,19 +82,18 @@ void Model::extractMeshData()
 
         if (data)
         {
+
             glBindTexture(GL_TEXTURE_2D, textureId);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); // Фильтрация при уменьшении
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST); // Фильтрация при увеличении
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); // Фильтрация при уменьшении
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // Фильтрация при увеличении
             switch (channels)
             {
                 case 3:
                     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
                     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-                    //cout << channels << width << height << str << endl;
                     break;
                 case 4:
                     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-                    //cout << channels << width << height << str << endl;
                     break;
             }
             glPixelStorei(GL_UNPACK_ALIGNMENT, 4);

@@ -22,6 +22,7 @@ void Mesh::Draw(Shader* shader)
 	{
 		string number;
 		string name = textures[i].type;
+		
 		if (name == "texture_diffuse")
 		{
 			number = std::to_string(diffuseNr++);
@@ -52,15 +53,11 @@ void Mesh::setupMesh()
 	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), &vertices[0], GL_STATIC_DRAW);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 
-	// vertex positions
-
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
 	glEnableVertexAttribArray(0);
-	// vertex normals
 
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal));
 	glEnableVertexAttribArray(1);
-	// vertex texture coords
 
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texCoords));
 	glEnableVertexAttribArray(2);
