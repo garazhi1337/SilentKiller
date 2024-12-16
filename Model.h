@@ -16,8 +16,10 @@ public:
 	void draw(Shader* shader, Camera* playerCamera, float screenWidth, float screenHeight);
 	vector<Mesh> meshes;
 private:
-	string directory;
 	const aiScene* scene;
 	void loadModel(string path);
 	void extractMeshData();
+	Model* deserializeModel();
+	void serializeModel();
+	string path;
 };

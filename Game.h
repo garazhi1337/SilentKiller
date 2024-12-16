@@ -28,8 +28,8 @@ private:
 	void processInput(GLFWwindow* window);
 	float randFloat(float min, float max);
 	glm::vec3 randSphericPosition(float x0, float y0, float z0, float minRadius, float maxRadius);
-	const float WIDTH = 1920.f;
-	const float HEIGHT = 1080.f;
+	const float WIDTH = 800.f;
+	const float HEIGHT = 800.f;
 	Camera* playerCamera;
 
 };
