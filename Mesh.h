@@ -6,6 +6,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include "Shader.h"
+#include "Camera.h"
 
 using namespace std;
 
@@ -22,16 +23,14 @@ struct Texture {
 
 class Mesh {
 public:
-	// mesh data
+	//тут все данные меша
 	vector<Vertex> vertices;
 	vector<uint32_t> indices;
 	vector<Texture> textures;
 	Mesh(vector<Vertex> vertices, vector<uint32_t> indices, vector<Texture> textures);
 	Mesh();
-	void Draw(Shader* shader);
+	void draw(Shader* shader, Camera* playerCamera, float screenWidth, float screenHeight);
 	uint32_t VAO, VBO, EBO;
 private:
-	// render data
-
 	void setupMesh();
 };

@@ -7,7 +7,7 @@ glm::vec3 Transform::getPosition()
 
 glm::vec3 Transform::getRotationAxis()
 {
-	return rotation;
+	return rotationAxis;
 }
 
 glm::vec3 Transform::getScale()
@@ -15,9 +15,9 @@ glm::vec3 Transform::getScale()
 	return scale;
 }
 
-glm::vec3 Transform::getAngles()
+glm::vec3 Transform::getRotationAngles()
 {
-	return angles;
+	return rotationAngles;
 }
 
 void Transform::setPosition(glm::vec3 position)
@@ -27,7 +27,7 @@ void Transform::setPosition(glm::vec3 position)
 
 void Transform::setRotationAxis(glm::vec3 rotation)
 {
-	this->rotation = rotation;
+	this->rotationAxis = rotation;
 }
 
 void Transform::setScale(glm::vec3 scale)
@@ -35,15 +35,24 @@ void Transform::setScale(glm::vec3 scale)
 	this->scale = scale;
 }
 
-void Transform::setAngles(glm::vec3 angles)
+void Transform::setRotationAngles(glm::vec3 rotationAngles)
 {
-	this->angles = angles;
+	this->rotationAngles = rotationAngles;
 }
 
-Transform::Transform(glm::vec3 position, glm::vec3 rotation, glm::vec3 scale, glm::vec3 angles)
+Transform::Transform(glm::vec3 position, glm::vec3 rotationAxis, glm::vec3 rotationAngles, glm::vec3 scale)
 {
 	this->position = position;
-	this->rotation = rotation;
+	this->rotationAxis = rotationAxis;
 	this->scale = scale;
-	this->angles = angles;
+	this->rotationAngles = rotationAngles;
+}
+
+Transform::Transform()
+{
+}
+
+Transform::~Transform()
+{
+	delete this;
 }

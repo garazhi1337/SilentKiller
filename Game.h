@@ -6,7 +6,6 @@
 #include <glm/glm.hpp>
 #include <vector>
 #include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
 #include "Shader.h"
 #include "Transform.h"
 #include "Camera.h"
@@ -29,8 +28,8 @@ private:
 	void processInput(GLFWwindow* window);
 	float randFloat(float min, float max);
 	glm::vec3 randSphericPosition(float x0, float y0, float z0, float minRadius, float maxRadius);
-	const float WIDTH = 720.f;
-	const float HEIGHT = 720.f;
+	const float WIDTH = 1920.f;
+	const float HEIGHT = 1080.f;
 	Camera* playerCamera;
 
 };

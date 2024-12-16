@@ -3,17 +3,28 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "Libraries/include/stb_image.h"
 #include "Model.h"
+#include "Camera.h"
+
+Model::Model()
+{
+
+}
 
 Model::Model(string path)
 {
 	loadModel(path);
 }
 
-void Model::Draw(Shader* shader)
+Model::~Model()
+{
+    delete this;
+}
+
+void Model::draw(Shader* shader, Camera* playerCamera, float screenWidth, float screenHeight)
 {
     for (uint32_t i = 0; i < meshes.size(); i++)
     {
-        meshes[i].Draw(shader);
+        meshes[i].draw(shader, playerCamera, screenWidth, screenHeight);
     }
 
 }

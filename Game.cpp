@@ -4,6 +4,7 @@
 
 #include "Game.h"
 #include "Light.cpp"
+#include "Scene.h"
 
 Game::Game()
 {
@@ -48,7 +49,13 @@ int Game::run()
 	Shader* shader = new Shader("vert.glsl", "frag.glsl");
 	shader->useProgram();
 
-	Model* ball = new Model("models\\shooting_range.obj");
+	Scene* scene = new Scene();
+	vector<Model*> models = (scene->getModels());
+	models.push_back(new Model("models\\shooting_range.obj"));
+	models.push_back(new Model("models\\ak74.obj"));
+	scene->setModels(models);
+	cout << scene->getModels().size() << endl;
+
 	Light* light = new Light(shader);
 	light->setLightMode(DIRECTIONAL);
 	light->setDirLightPos(glm::vec3(- 1.0f, -1.0f, -1.0f));
@@ -64,16 +71,10 @@ int Game::run()
 		shader->setVec3("eyePos", playerCamera->getPos());
 
 		//glBindVertexArray(VAO);
-		glm::mat4 model = glm::mat4(1.0f);
-		glm::mat4 view = glm::mat4(1.0f);
-		view = playerCamera->rotate();
-		glm::mat4 projection = glm::mat4(1.0f);
-		projection = glm::perspective(45.0f, WIDTH / HEIGHT, 0.1f, 100.0f);
 
-		shader->setFloatMat4("m", model);
-		shader->setFloatMat4("v", view);
-		shader->setFloatMat4("p", projection);
-		ball->Draw(shader);
+
+		scene->draw(shader, playerCamera, WIDTH, HEIGHT);
+
 
 		glfwSetWindowSizeCallback(window, handleOnResize);
 		glfwSetCursorPosCallback(window, handleOnMouse);
@@ -127,7 +128,6 @@ glm::vec3 Game::randSphericPosition(float x0, float y0, float z0, float minRadiu
 
 static void handleOnResize(GLFWwindow* _window, int width, int height)
 {
-	cout << "kittens" << endl;
 	reinterpret_cast<Game*>(glfwGetWindowUserPointer(_window))->onResize(_window, width, height);
 }
 

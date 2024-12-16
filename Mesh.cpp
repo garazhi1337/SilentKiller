@@ -13,8 +13,17 @@ Mesh::Mesh()
 
 }
 
-void Mesh::Draw(Shader* shader)
+void Mesh::draw(Shader* shader, Camera* playerCamera, float screenWidth, float screenHeight)
 {
+	glm::mat4 model = glm::mat4(1.0f);
+	glm::mat4 view = glm::mat4(1.0f);
+	view = playerCamera->rotate();
+	glm::mat4 projection = glm::mat4(1.0f);
+	projection = glm::perspective(45.0f, screenWidth / screenHeight, 0.1f, 100.0f);
+	shader->setFloatMat4("m", model);
+	shader->setFloatMat4("v", view);
+	shader->setFloatMat4("p", projection);
+
 	uint32_t diffuseNr = 1;
 	uint32_t specularNr = 1;
 

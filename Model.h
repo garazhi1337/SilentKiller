@@ -10,8 +10,10 @@
 class Model
 {
 public:
+	Model();
 	Model(string path);
-	void Draw(Shader* shader);
+	~Model();
+	void draw(Shader* shader, Camera* playerCamera, float screenWidth, float screenHeight);
 	vector<Mesh> meshes;
 private:
 	string directory;

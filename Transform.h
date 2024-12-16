@@ -8,18 +8,20 @@ class Transform
 {
 private:
 	glm::vec3 position;
-	glm::vec3 rotation;
+	glm::vec3 rotationAxis;
 	glm::vec3 scale;
-	glm::vec3 angles;
+	glm::vec3 rotationAngles;
 public:
 	glm::vec3 getPosition();
 	glm::vec3 getRotationAxis();
 	glm::vec3 getScale();
-	glm::vec3 getAngles();
+	glm::vec3 getRotationAngles();
 	void setPosition(glm::vec3 position);
-	void setRotationAxis(glm::vec3 rotation);
+	void setRotationAxis(glm::vec3 rotationAxis);
 	void setScale(glm::vec3 scale);
-	void setAngles(glm::vec3 angles);
-	Transform(glm::vec3 position, glm::vec3 rotation, glm::vec3 scale, glm::vec3 angles);
+	void setRotationAngles(glm::vec3 rotationAngles);
+	Transform(glm::vec3 position, glm::vec3 rotationAxis, glm::vec3 rotationAngles, glm::vec3 scale);
+	Transform();
+	~Transform();
 };
 
