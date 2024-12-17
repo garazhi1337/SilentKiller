@@ -4,7 +4,6 @@
 #include "Libraries/include/stb_image.h"
 #include "Model.h"
 #include "Camera.h"
-#include "nlohmann/json.hpp"
 
 Model::Model()
 {
@@ -48,20 +47,13 @@ void Model::loadModel(string path)
 
 void Model::extractMeshData()
 {
-    nlohmann::json jsonMeshes;
-    std::ofstream outFile(path.substr(0, path.find_first_of('.')) + ".json");
-
-    jsonMeshes["meshes"] = nlohmann::json::array();
 
 	for (uint32_t i = 0; i < scene->mNumMeshes; i++)
 	{
 		aiMesh* mesh = scene->mMeshes[i];
 
-        nlohmann::json vertices;
-        vertices["vertices"] = nlohmann::json::array();
-
         Mesh tmpMesh;
-        // Извлечение данных из меша
+        // извлечение данных из меша
         for (uint32_t j = 0; j < mesh->mNumVertices; j++) {
             aiVector3D position = mesh->mVertices[j];
             aiVector3D normal = mesh->mNormals[j];
@@ -71,58 +63,22 @@ void Model::extractMeshData()
             glm::vec2 glmTex = glm::vec2(texCoord.x, texCoord.y);
             Vertex vert = { glmPos, glmNorm, glmTex };
 
-            //загрузка данных о вершине в json
-
-            
-            nlohmann::json pos;
-            pos["pos"] = nlohmann::json::array();
-            pos["pos"].push_back(position.x);
-            pos["pos"].push_back(position.y);
-            pos["pos"].push_back(position.z);
-            vertices["vertices"].push_back(pos);
-
-            nlohmann::json norm;
-            norm["norm"] = nlohmann::json::array();
-            norm["norm"].push_back(normal.x);
-            norm["norm"].push_back(normal.y);
-            norm["norm"].push_back(normal.z);
-            vertices["vertices"].push_back(norm);
-
-            nlohmann::json tex;
-            tex["tex"] = nlohmann::json::array();
-            tex["tex"].push_back(texCoord.x);
-            tex["tex"].push_back(texCoord.y);
-            vertices["vertices"].push_back(tex);
-
             tmpMesh.vertices.push_back(vert);
         }
-
-        jsonMeshes["meshes"].push_back(vertices);
-
-
-        //std::cout << mesh->mNumFaces << std::endl;
-
-        // Обрабатывать индексы
-
-        nlohmann::json indicies;
-        indicies["indicies"] = nlohmann::json::array();
 
         for (uint32_t j = 0; j < mesh->mNumFaces; j++) {
             aiFace face = mesh->mFaces[j];
             for (uint32_t k = 0; k < face.mNumIndices; k++) {
-                indicies["indicies"].push_back(face.mIndices[k]);
                 tmpMesh.indices.push_back(face.mIndices[k]);
             }
         }
-
-        jsonMeshes["meshes"].push_back(indicies);
 
         unsigned int textureId;
         glGenTextures(1, &textureId);
 
         int width, height, channels;
         aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-        aiString path; // Переменная для хранения пути к текстуре
+        aiString path; // переменная для хранения пути к текстуре
         aiString rel;
         rel.Set("models/textures/");
         if (material->GetTexture(aiTextureType_DIFFUSE, 0, &path) == aiReturn_SUCCESS) {
@@ -138,8 +94,8 @@ void Model::extractMeshData()
         {
 
             glBindTexture(GL_TEXTURE_2D, textureId);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); // Фильтрация при уменьшении
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // Фильтрация при увеличении
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); 
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); 
             switch (channels)
             {
                 case 3:
@@ -152,16 +108,7 @@ void Model::extractMeshData()
             }
             glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
 
-            nlohmann::json texture;
-            nlohmann::json txtr;
-            texture["name"] = name;
-            texture["ref"] = nlohmann::json::array();
-            texture["ref"] = str;
-            txtr["texture"] = texture;
-
-            jsonMeshes["meshes"].push_back(txtr);
-
-            //glBindTexture(GL_TEXTURE_2D, 0);
+            glBindTexture(GL_TEXTURE_2D, 0);
             stbi_image_free(data);
         }
         else
@@ -176,23 +123,32 @@ void Model::extractMeshData()
         Mesh myMesh(tmpMesh.vertices, tmpMesh.indices, tmpMesh.textures);
         meshes.push_back(myMesh);
 	}
-
-    outFile << jsonMeshes.dump(4);
-    outFile.close();
+    if (meshes.size() > 0)
+    {
+        serializeModel(path.substr(0, path.find_first_of('.')) + ".bin");
+    }
 }
 
-Model* Model::deserializeModel()
+Model* Model::deserializeModel(std::string path)
 {
     vector<Mesh> meshes;
     vector<Vertex> vertices;
     vector<uint32_t> indicies;
     vector<Texture> textures;
 
-
-
     return nullptr;
 }
 
-void Model::serializeModel()
+void Model::serializeModel(std::string path)
 {
+    vector<Mesh> meshes;
+    vector<Vertex> vertices;
+    vector<uint32_t> indicies;
+    vector<Texture> textures;
+
+    std::ofstream outFile(path, std::ios::binary);
+
+    int32_t meshesSize = meshes.size();
+    outFile.write(reinterpret_cast<const char*>(indicies), meshesSize * sizeof(Mesh));
+    outFile.close();
 }
