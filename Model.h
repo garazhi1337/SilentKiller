@@ -19,7 +19,7 @@ private:
 	const aiScene* scene;
 	void loadModel(string path);
 	void extractMeshData();
-	Model* deserializeModel(std::string path);
+	void deserializeModel(std::string path);
 	void serializeModel(std::string path);
 	string path;
 };

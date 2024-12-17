@@ -1,5 +1,8 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <iostream>
+#include <filesystem>
+#include <cstdint>
 #define STB_IMAGE_IMPLEMENTATION
 #include "Libraries/include/stb_image.h"
 #include "Model.h"
@@ -32,21 +35,34 @@ void Model::draw(Shader* shader, Camera* playerCamera, float screenWidth, float 
 
 void Model::loadModel(string path)
 {
-	Assimp::Importer import;
-	scene = import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
-	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
-	{
-		std::cout << "ERROR::ASSIMP::" << import.GetErrorString() << std::endl;
-		return;
+    if (std::filesystem::exists(path.substr(0, path.find_first_of('.')) + ".bin"))
+    {
+        std::cout << "exists" << "\n";
+        deserializeModel(path.substr(0, path.find_first_of('.')) + ".bin");
     }
     else
     {
-        extractMeshData();
+        Assimp::Importer import;
+        scene = import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
+        if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
+        {
+            std::cout << "ERROR::ASSIMP::" << import.GetErrorString() << std::endl;
+            return;
+        }
+        else
+        {
+            extractMeshData();
+        }
     }
+
 }
 
 void Model::extractMeshData()
 {
+
+    std::ofstream out(path.substr(0, path.find_first_of('.')) + ".bin", std::ios::binary);
+    size_t meshesSize = scene->mNumMeshes;
+    out.write(reinterpret_cast<const char*>(&meshesSize), sizeof(size_t));
 
 	for (uint32_t i = 0; i < scene->mNumMeshes; i++)
 	{
@@ -84,11 +100,11 @@ void Model::extractMeshData()
         if (material->GetTexture(aiTextureType_DIFFUSE, 0, &path) == aiReturn_SUCCESS) {
             rel.Append(path.C_Str());
         }
-        const char* str = rel.C_Str();
+        std::string str = rel.C_Str();
         std::cout << str << " " << textureId << std::endl;
 
         string name = "texture_diffuse";
-        unsigned char* data = stbi_load(str, &width, &height, &channels, 0);
+        unsigned char* data = stbi_load(str.c_str(), &width, &height, &channels, 0);
 
         if (data)
         {
@@ -121,34 +137,75 @@ void Model::extractMeshData()
         tmpMesh.textures.push_back(texture);
 
         Mesh myMesh(tmpMesh.vertices, tmpMesh.indices, tmpMesh.textures);
+        
+        //запись данных обьекта в бинарный формат
+        size_t verticesSize = tmpMesh.vertices.size();
+        out.write(reinterpret_cast<const char*>(&verticesSize), sizeof(size_t));
+        out.write(reinterpret_cast<const char*>(tmpMesh.vertices.data()), sizeof(Vertex) * verticesSize);
+        size_t indicesSize = tmpMesh.indices.size();
+        out.write(reinterpret_cast<const char*>(&indicesSize), sizeof(size_t));
+        out.write(reinterpret_cast<const char*>(tmpMesh.indices.data()), sizeof(uint32_t) * indicesSize);
+        //out.write(reinterpret_cast<const char*>(&name), sizeof(std::string));
+        //out.write(reinterpret_cast<const char*>(&s), sizeof(std::string));
+
         meshes.push_back(myMesh);
 	}
-    if (meshes.size() > 0)
-    {
-        serializeModel(path.substr(0, path.find_first_of('.')) + ".bin");
-    }
+    
+    out.close();
 }
 
-Model* Model::deserializeModel(std::string path)
+void Model::deserializeModel(std::string path)
 {
-    vector<Mesh> meshes;
-    vector<Vertex> vertices;
-    vector<uint32_t> indicies;
-    vector<Texture> textures;
+    std::ifstream in(path, std::ios::binary);
 
-    return nullptr;
+    size_t meshesSize;
+    in.read(reinterpret_cast<char*>(&meshesSize), sizeof(size_t));
+    std::cout << meshesSize << "\n";
+
+    for (uint32_t i = 0; i < (uint32_t)meshesSize; i++)
+    {
+        Mesh mesh;
+        vector<Vertex> vertices;
+        vector<uint32_t> indices;
+        vector<Texture> textures;
+
+        size_t verticesSize;
+        in.read(reinterpret_cast<char*>(&verticesSize), sizeof(size_t));
+        mesh.vertices.resize(verticesSize);
+        in.read(reinterpret_cast<char*>(mesh.vertices.data()), sizeof(Vertex) * verticesSize);
+
+        size_t indicesSize;
+        in.read(reinterpret_cast<char*>(&indicesSize), sizeof(size_t));
+        mesh.indices.resize(indicesSize);
+        in.read(reinterpret_cast<char*>(mesh.indices.data()), sizeof(uint32_t) * indicesSize);
+
+
+        //std::string name;
+        //in.read(reinterpret_cast<char*>(&name), sizeof(std::string));
+
+
+        //std::string ref;
+        //in.read(reinterpret_cast<char*>(&ref), sizeof(std::string));
+        //std::cout << ref << "\n";
+
+
+        //mesh.vertices = vertices;
+        //mesh.indices = indices;
+        meshes.push_back(mesh);
+    }
+
+    for (Mesh mesh : meshes)
+    {
+        for (Vertex vertex: mesh.vertices)
+        {
+            cout << vertex.position.x << " " << vertex.position.y  << " " << vertex.position.z << endl;
+        }
+    }
+
+    in.close();
 }
 
 void Model::serializeModel(std::string path)
 {
-    vector<Mesh> meshes;
-    vector<Vertex> vertices;
-    vector<uint32_t> indicies;
-    vector<Texture> textures;
 
-    std::ofstream outFile(path, std::ios::binary);
-
-    int32_t meshesSize = meshes.size();
-    outFile.write(reinterpret_cast<const char*>(indicies), meshesSize * sizeof(Mesh));
-    outFile.close();
 }
