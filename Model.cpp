@@ -37,7 +37,8 @@ void Model::loadModel(string path)
 {
     if (std::filesystem::exists(path.substr(0, path.find_first_of('.')) + ".bin"))
     {
-        std::cout << "exists" << "\n";
+        //std::cout << "exists" << "\n";
+        //десериализация сохраненной в бинарном формате модели
         deserializeModel(path.substr(0, path.find_first_of('.')) + ".bin");
     }
     else
@@ -89,7 +90,7 @@ void Model::extractMeshData()
             }
         }
 
-        unsigned int textureId;
+        uint32_t textureId;
         glGenTextures(1, &textureId);
 
         int width, height, channels;
@@ -145,8 +146,13 @@ void Model::extractMeshData()
         size_t indicesSize = tmpMesh.indices.size();
         out.write(reinterpret_cast<const char*>(&indicesSize), sizeof(size_t));
         out.write(reinterpret_cast<const char*>(tmpMesh.indices.data()), sizeof(uint32_t) * indicesSize);
-        //out.write(reinterpret_cast<const char*>(&name), sizeof(std::string));
-        //out.write(reinterpret_cast<const char*>(&s), sizeof(std::string));
+        size_t nameSize = name.size();
+        out.write(reinterpret_cast<const char*>(&nameSize), sizeof(size_t));
+        out.write(reinterpret_cast<const char*>(name.data()), nameSize);
+        
+        size_t refSize = str.size();
+        out.write(reinterpret_cast<const char*>(&refSize), sizeof(size_t));
+        out.write(reinterpret_cast<const char*>(str.data()), refSize);
 
         meshes.push_back(myMesh);
 	}
@@ -160,48 +166,74 @@ void Model::deserializeModel(std::string path)
 
     size_t meshesSize;
     in.read(reinterpret_cast<char*>(&meshesSize), sizeof(size_t));
-    std::cout << meshesSize << "\n";
 
     for (uint32_t i = 0; i < (uint32_t)meshesSize; i++)
     {
-        Mesh mesh;
+
         vector<Vertex> vertices;
         vector<uint32_t> indices;
         vector<Texture> textures;
 
         size_t verticesSize;
         in.read(reinterpret_cast<char*>(&verticesSize), sizeof(size_t));
-        mesh.vertices.resize(verticesSize);
-        in.read(reinterpret_cast<char*>(mesh.vertices.data()), sizeof(Vertex) * verticesSize);
+        vertices.resize(verticesSize);
+        in.read(reinterpret_cast<char*>(vertices.data()), sizeof(Vertex) * verticesSize);
 
         size_t indicesSize;
         in.read(reinterpret_cast<char*>(&indicesSize), sizeof(size_t));
-        mesh.indices.resize(indicesSize);
-        in.read(reinterpret_cast<char*>(mesh.indices.data()), sizeof(uint32_t) * indicesSize);
+        indices.resize(indicesSize);
+        in.read(reinterpret_cast<char*>(indices.data()), sizeof(uint32_t) * indicesSize);
 
+        std::string name;
+        size_t nameSize;
+        in.read(reinterpret_cast<char*>(&nameSize), sizeof(size_t));
+        name.resize(nameSize);
+        in.read(reinterpret_cast<char*>(name.data()), nameSize);
 
-        //std::string name;
-        //in.read(reinterpret_cast<char*>(&name), sizeof(std::string));
+        std::string ref;
+        size_t refSize;
+        in.read(reinterpret_cast<char*>(&refSize), sizeof(size_t));
+        ref.resize(refSize);
+        in.read(reinterpret_cast<char*>(ref.data()), refSize);
 
+        uint32_t textureId;
+        glGenTextures(1, &textureId);
+        int32_t width, height, channels;
+        unsigned char* data = stbi_load(ref.c_str(), &width, &height, &channels, 0);
 
-        //std::string ref;
-        //in.read(reinterpret_cast<char*>(&ref), sizeof(std::string));
-        //std::cout << ref << "\n";
+        if (data)
+        {
 
+            glBindTexture(GL_TEXTURE_2D, textureId);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            switch (channels)
+            {
+            case 3:
+                glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+                break;
+            case 4:
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+                break;
+            }
+            glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
 
-        //mesh.vertices = vertices;
-        //mesh.indices = indices;
+            glBindTexture(GL_TEXTURE_2D, 0);
+            stbi_image_free(data);
+        }
+        else
+        {
+            std::cout << "Failed to load texture *quq quq*: " << stbi_failure_reason() << std::endl;
+        }
+
+        Texture texture = {textureId, name};
+        textures.push_back(texture);
+
+        Mesh mesh(vertices, indices, textures);
+
         meshes.push_back(mesh);
     }
-
-    for (Mesh mesh : meshes)
-    {
-        for (Vertex vertex: mesh.vertices)
-        {
-            cout << vertex.position.x << " " << vertex.position.y  << " " << vertex.position.z << endl;
-        }
-    }
-
     in.close();
 }
 
