@@ -15,24 +15,19 @@ uniform vec3 pointLightPos;
 uniform int lightMode;
 
 uniform sampler2D texture_diffuse1;
-uniform sampler2D texture_diffuse2;
-uniform sampler2D texture_diffuse3;
-uniform sampler2D texture_diffuse4;
-uniform sampler2D texture_diffuse5;
-uniform sampler2D texture_diffuse6;
 uniform sampler2D texture_specular1;
-uniform sampler2D texture_specular2;
-uniform sampler2D texture_specular3;
 
 void main()
 {
 	//outColor = vec4(0.1, 0.2, 0.3, 1.f);
 	if (lightMode == DIRECTIONAL)
 	{
-		vec4 ambient = texture(texture_diffuse1, textureCoords) * 0.15f;
+		vec4 ambient = texture(texture_diffuse1, textureCoords) * 0.2f;
 		float diffuseCoef = max(dot(-normalize(dirLightPos), vertNormal), 0.0f);
 		vec4 diffuse = texture(texture_diffuse1, textureCoords) * diffuseCoef;
-		outColor = ambient + diffuse;
+		float specularCoef = 0.0f;
+		vec4 specular = texture(texture_specular1, textureCoords);
+		outColor = specular;
 	}
 	else if (lightMode == PROJECTOR)
 	{
