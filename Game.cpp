@@ -51,9 +51,9 @@ int Game::run()
 
 	Scene* scene = new Scene();
 	vector<Model*> models = (scene->getModels());
-	//models.push_back(new Model("models\\shooting_range.obj"));
-	//models.push_back(new Model("models\\ak74.obj"));
-	models.push_back(new Model("models\\cube.obj"));
+	models.push_back(new Model("models\\shooting_range.obj"));
+	models.push_back(new Model("models\\ak74.obj"));
+	//models.push_back(new Model("models\\cube.obj"));
 	scene->setModels(models);
 	//std::cout << "Game.cpp - Models count: " + scene->getModels().size() << std::endl;
 

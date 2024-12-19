@@ -60,7 +60,7 @@ void Model::loadModel(string path)
 
 void Model::extractMeshData()
 {
-
+    time_t timeStart = std::time(nullptr);
     std::ofstream out(path.substr(0, path.find_first_of('.')) + ".bin", std::ios::binary);
     size_t meshesSize = scene->mNumMeshes;
     out.write(reinterpret_cast<const char*>(&meshesSize), sizeof(size_t));
@@ -158,11 +158,16 @@ void Model::extractMeshData()
 	}
     
     out.close();
+    time_t timeStop = std::time(nullptr);
+
+    std::cout << timeStop - timeStart << "\n";
 }
 
 void Model::deserializeModel(std::string path)
 {
     std::ifstream in(path, std::ios::binary);
+    time_t time = std::time(nullptr);
+    long long timeStart = static_cast<long long>(time) * 1000;
 
     size_t meshesSize;
     in.read(reinterpret_cast<char*>(&meshesSize), sizeof(size_t));
@@ -235,6 +240,10 @@ void Model::deserializeModel(std::string path)
         meshes.push_back(mesh);
     }
     in.close();
+
+    time_t t = std::time(nullptr);
+    long long timeStop = static_cast<long long>(t) * 1000;
+    std::cout << timeStop - timeStart << "\n";
 }
 
 void Model::serializeModel(std::string path)
