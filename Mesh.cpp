@@ -1,10 +1,11 @@
 #include "Mesh.h"
 
-Mesh::Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<Texture> textures)
+Mesh::Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<Texture> textures, bool useSpecular)
 {
 	this->vertices = vertices;
 	this->indices = indices;
 	this->textures = textures;
+	this->useSpecular = useSpecular;
 	setupMesh();
 }
 
@@ -15,6 +16,7 @@ Mesh::Mesh()
 
 void Mesh::draw(Shader* shader, Camera* playerCamera, float screenWidth, float screenHeight)
 {
+	shader->useProgram();
 	glm::mat4 model = glm::mat4(1.0f);
 	glm::mat4 view = glm::mat4(1.0f);
 	view = playerCamera->rotate();
@@ -23,6 +25,7 @@ void Mesh::draw(Shader* shader, Camera* playerCamera, float screenWidth, float s
 	shader->setFloatMat4("m", model);
 	shader->setFloatMat4("v", view);
 	shader->setFloatMat4("p", projection);
+	shader->setVec3("eyePos", playerCamera->getPos());
 
 	uint32_t diffuseNr = 1;
 	uint32_t specularNr = 1;
@@ -44,6 +47,14 @@ void Mesh::draw(Shader* shader, Camera* playerCamera, float screenWidth, float s
 		shader->setInt((name + number).c_str(), i);
 		glActiveTexture(GL_TEXTURE0 + i);
 		glBindTexture(GL_TEXTURE_2D, textures[i].id);
+		if (useSpecular && name == "texture_specular")
+		{
+			shader->setInt("useSpecular", 1);
+		}
+		else
+		{
+			shader->setInt("useSpecular", 0);
+		}
 	}
 
 	glActiveTexture(GL_TEXTURE0);

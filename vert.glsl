@@ -17,5 +17,5 @@ void main()
 	gl_Position = p * v * m * vec4(aPos, 1.0f);
 	textureCoords = textCoords;
 	vertPosition = vec3(m * vec4(aPos, 1.0f));
-	vertNormal = mat3(m) * normalCoords;
+	vertNormal = vec3(m * vec4(normalCoords, 1.0f));
 }

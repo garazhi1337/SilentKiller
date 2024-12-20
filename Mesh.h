@@ -27,7 +27,8 @@ public:
 	vector<Vertex> vertices;
 	vector<uint32_t> indices;
 	vector<Texture> textures;
-	Mesh(vector<Vertex> vertices, vector<uint32_t> indices, vector<Texture> textures);
+	bool useSpecular;
+	Mesh(vector<Vertex> vertices, vector<uint32_t> indices, vector<Texture> textures, bool useSpecular);
 	Mesh();
 	void draw(Shader* shader, Camera* playerCamera, float screenWidth, float screenHeight);
 	uint32_t VAO, VBO, EBO;

@@ -59,7 +59,7 @@ int Game::run()
 
 	Light* light = new Light(shader);
 	light->setLightMode(DIRECTIONAL);
-	light->setDirLightPos(glm::vec3(- 1.0f, -1.0f, -1.0f));
+	light->setDirLightPos(glm::vec3(0.0f, -1.0f, -1.0f));
 
 	while (!glfwWindowShouldClose(window))
 	{

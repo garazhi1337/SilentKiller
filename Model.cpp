@@ -35,11 +35,11 @@ void Model::draw(Shader* shader, Camera* playerCamera, float screenWidth, float 
 
 void Model::loadModel(string path)
 {
-    if (false) //(std::filesystem::exists(path.substr(0, path.find_first_of('.')) + ".bin"))
+    if (std::filesystem::exists(path.substr(0, path.find_first_of('.')) + ".bin"))
     {
         //std::cout << "exists" << "\n";
         //десериализация сохраненной в бинарном формате модели
-        //deserializeModel(path.substr(0, path.find_first_of('.')) + ".bin");
+        deserializeModel(path.substr(0, path.find_first_of('.')) + ".bin");
     }
     else
     {
@@ -60,7 +60,6 @@ void Model::loadModel(string path)
 
 void Model::extractMeshData()
 {
-    time_t timeStart = std::time(nullptr);
     std::ofstream out(path.substr(0, path.find_first_of('.')) + ".bin", std::ios::binary);
     size_t meshesSize = scene->mNumMeshes;
     out.write(reinterpret_cast<const char*>(&meshesSize), sizeof(size_t));
@@ -68,6 +67,7 @@ void Model::extractMeshData()
     for (uint32_t i = 0; i < scene->mNumMeshes; i++)
     {
         aiMesh* mesh = scene->mMeshes[i];
+
 
         Mesh tmpMesh;
         // извлечение данных из меша
@@ -92,6 +92,7 @@ void Model::extractMeshData()
 
         std::vector<std::string> names;
         std::vector<std::string> paths;
+        bool useSpecular = false;
 
         aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
         uint32_t diffuseCount = material->GetTextureCount(aiTextureType_DIFFUSE);
@@ -122,7 +123,6 @@ void Model::extractMeshData()
 
                 if (data)
                 {
-
                     glBindTexture(GL_TEXTURE_2D, textureId);
                     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
                     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -155,6 +155,7 @@ void Model::extractMeshData()
         std::cout << specularCount << "\n";
         if (specularCount > 0)
         {
+            useSpecular = true;
             for (uint32_t j = 0; j < specularCount; j++)
             {
                 uint32_t textureId;
@@ -208,44 +209,50 @@ void Model::extractMeshData()
             }
         }
 
+        tmpMesh.useSpecular = useSpecular;
 
 
-
-        Mesh myMesh(tmpMesh.vertices, tmpMesh.indices, tmpMesh.textures);
+        Mesh myMesh(tmpMesh.vertices, tmpMesh.indices, tmpMesh.textures, tmpMesh.useSpecular);
         
         //запись данных обьекта в бинарный формат
+
         size_t verticesSize = tmpMesh.vertices.size();
         out.write(reinterpret_cast<const char*>(&verticesSize), sizeof(size_t));
         out.write(reinterpret_cast<const char*>(tmpMesh.vertices.data()), sizeof(Vertex) * verticesSize);
+
         size_t indicesSize = tmpMesh.indices.size();
         out.write(reinterpret_cast<const char*>(&indicesSize), sizeof(size_t));
         out.write(reinterpret_cast<const char*>(tmpMesh.indices.data()), sizeof(uint32_t) * indicesSize);
-        /*
-        * 
-        *         size_t nameSize = name.size();
-        out.write(reinterpret_cast<const char*>(&nameSize), sizeof(size_t));
-        out.write(reinterpret_cast<const char*>(name.data()), nameSize);
-        
-        size_t refSize = str.size();
-        out.write(reinterpret_cast<const char*>(&refSize), sizeof(size_t));
-        out.write(reinterpret_cast<const char*>(str.data()), refSize);
-        */
 
+        size_t namesSize = names.size();
+        out.write(reinterpret_cast<const char*>(&namesSize), sizeof(size_t));
+        for (std::string name : names)
+        {
+            size_t nameSize = name.size();
+            out.write(reinterpret_cast<const char*>(&nameSize), sizeof(size_t));
+            out.write(reinterpret_cast<const char*>(name.data()), nameSize);
+        }
+        
+        size_t pathsSize = paths.size();
+        out.write(reinterpret_cast<const char*>(&pathsSize), sizeof(size_t));
+        for (std::string path : paths)
+        {
+            size_t pathSize = path.size();
+            out.write(reinterpret_cast<const char*>(&pathSize), sizeof(size_t));
+            out.write(reinterpret_cast<const char*>(path.data()), pathSize);
+        }
+
+        out.write(reinterpret_cast<const char*>(&useSpecular), sizeof(bool));
 
         meshes.push_back(myMesh);
 	}
     
     out.close();
-    time_t timeStop = std::time(nullptr);
-
-    std::cout << timeStop - timeStart << "\n";
 }
 
 void Model::deserializeModel(std::string path)
 {
     std::ifstream in(path, std::ios::binary);
-    time_t time = std::time(nullptr);
-    long long timeStart = static_cast<long long>(time) * 1000;
 
     size_t meshesSize;
     in.read(reinterpret_cast<char*>(&meshesSize), sizeof(size_t));
@@ -256,6 +263,9 @@ void Model::deserializeModel(std::string path)
         vector<Vertex> vertices;
         vector<uint32_t> indices;
         vector<Texture> textures;
+        vector<std::string> names;
+        vector<std::string> paths;
+        bool useSpecular;
 
         size_t verticesSize;
         in.read(reinterpret_cast<char*>(&verticesSize), sizeof(size_t));
@@ -267,61 +277,73 @@ void Model::deserializeModel(std::string path)
         indices.resize(indicesSize);
         in.read(reinterpret_cast<char*>(indices.data()), sizeof(uint32_t) * indicesSize);
 
-        std::string name;
-        size_t nameSize;
-        in.read(reinterpret_cast<char*>(&nameSize), sizeof(size_t));
-        name.resize(nameSize);
-        in.read(reinterpret_cast<char*>(name.data()), nameSize);
-
-        std::string ref;
-        size_t refSize;
-        in.read(reinterpret_cast<char*>(&refSize), sizeof(size_t));
-        ref.resize(refSize);
-        in.read(reinterpret_cast<char*>(ref.data()), refSize);
-
-        uint32_t textureId;
-        glGenTextures(1, &textureId);
-        int32_t width, height, channels;
-        unsigned char* data = stbi_load(ref.c_str(), &width, &height, &channels, 0);
-
-        if (data)
+        size_t namesSize;
+        in.read(reinterpret_cast<char*>(&namesSize), sizeof(size_t));
+        names.resize(namesSize);
+        ;
+        for (std::string& name : names)
         {
+            size_t nameSize;
+            in.read(reinterpret_cast<char*>(&nameSize), sizeof(size_t));
+            name.resize(nameSize);
+            in.read(name.data(), nameSize);
+        }
 
-            glBindTexture(GL_TEXTURE_2D, textureId);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-            switch (channels)
+        size_t pathsSize;
+        in.read(reinterpret_cast<char*>(&pathsSize), sizeof(size_t));
+        paths.resize(pathsSize);
+        for (std::string& path : paths)
+        {
+            size_t pathSize;
+            in.read(reinterpret_cast<char*>(&pathSize), sizeof(size_t));
+            path.resize(pathSize);
+            in.read(path.data(), pathSize);
+        }
+
+        in.read(reinterpret_cast<char*>(&useSpecular), sizeof(bool));
+
+        for (uint32_t j = 0; j < paths.size(); j++)
+        {
+            uint32_t textureId;
+            glGenTextures(1, &textureId);
+            int32_t width, height, channels;
+            unsigned char* data = stbi_load(paths[j].c_str(), &width, &height, &channels, 0);
+
+            if (data)
             {
-            case 3:
-                glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-                break;
-            case 4:
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-                break;
+
+                glBindTexture(GL_TEXTURE_2D, textureId);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                switch (channels)
+                {
+                case 3:
+                    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+                    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+                    break;
+                case 4:
+                    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+                    break;
+                }
+                glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+
+                glBindTexture(GL_TEXTURE_2D, 0);
+                stbi_image_free(data);
             }
-            glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+            else
+            {
+                std::cout << "Failed to load texture *quq quq*: " << stbi_failure_reason() << std::endl;
+            }
 
-            glBindTexture(GL_TEXTURE_2D, 0);
-            stbi_image_free(data);
+            Texture texture = { textureId, names[j]};
+            textures.push_back(texture);
         }
-        else
-        {
-            std::cout << "Failed to load texture *quq quq*: " << stbi_failure_reason() << std::endl;
-        }
 
-        Texture texture = {textureId, name};
-        textures.push_back(texture);
-
-        Mesh mesh(vertices, indices, textures);
+        Mesh mesh(vertices, indices, textures, useSpecular);
 
         meshes.push_back(mesh);
     }
     in.close();
-
-    time_t t = std::time(nullptr);
-    long long timeStop = static_cast<long long>(t) * 1000;
-    std::cout << timeStop - timeStart << "\n";
 }
 
 void Model::serializeModel(std::string path)
